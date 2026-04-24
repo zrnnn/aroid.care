@@ -3,7 +3,7 @@
 ## Overview
 **Project.Aroid** is a modern, high-end, interactive Single-Page Application (SPA) designed as a digital encyclopedia and scientific diagnostic center for rare tropical aroids and exotic houseplants. 
 
-The application utilizes a stunning "Editorial Nature" dark theme, relying on heavy glassmorphism, fluid micro-animations, and a highly responsive single-file architecture (`TestWebsite.html`). It is designed to emulate the premium feel of a luxury editorial magazine while delivering deeply scientific horticultural data.
+The application utilizes a stunning "Editorial Nature" dark theme, relying on heavy glassmorphism, fluid micro-animations, and a highly responsive single-file architecture (`index.html`). It is designed to emulate the premium feel of a luxury editorial magazine while delivering deeply scientific horticultural data.
 
 ## Architecture & Technology Stack
 - **Structure:** Single-File Architecture (HTML, CSS, and JavaScript encapsulated in a single file) for maximum portability and instant load times.
@@ -51,9 +51,17 @@ The application employs an efficient, object-oriented data architecture to minim
 
 ## Installation & Execution
 Because this is a pure client-side application (no backend or build step required):
-1. Save `TestWebsite.html`, `database.js`, and the `./assets/` folder locally.
-2. Open `TestWebsite.html` in any modern web browser.
+1. Save `index.html`, `database.js`, and the `./assets/` folder locally.
+2. Open `index.html` in any modern web browser.
 3. *Note on Routing:* If running directly via the `file://` protocol, `history.pushState` will be safely caught in a `try/catch` block to prevent CORS errors. For full URL updating functionality, run a simple local server (e.g., `python3 -m http.server`).
+
+
+## GitHub Pages Deployment
+This repository is configured for automated GitHub Pages deployment via GitHub Actions (`.github/workflows/deploy-pages.yml`).
+
+- **Suggested site URL:** `https://<your-github-username>.github.io/aroid.care/`
+- In GitHub repo settings, set **Pages → Build and deployment → Source = GitHub Actions**.
+- Push to `main` to publish updates automatically.
 
 ## Extensibility (For Developers)
 - **Adding Plants:** Add a new object to the `plantsData` array in `database.js`. Download an image, name it matching the plant's slug (e.g., `monstera_deliciosa.jpg`), and place it in `./assets/onlineimages/`.
