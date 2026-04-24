@@ -1,9 +1,9 @@
 const CACHE_NAME = 'aroid-cache-v1';
 const urlsToCache = [
-  './TestWebsite.html',
+  './index.html',
   './database.js',
-  './assets/background/2.png',
-  './assets/placeholder.png'
+  './assets/background_2.png',
+  './assets/ui_placeholder.png'
 ];
 
 self.addEventListener('install', event => {

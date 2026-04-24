@@ -2,18 +2,18 @@
   "name": "Project.Aroid",
   "short_name": "Project.Aroid",
   "description": "The Botanical Archive & Personal Plant Tracker",
-  "start_url": "./TestWebsite.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#060a07",
   "theme_color": "#819067",
   "icons": [
     {
-      "src": "./assets/placeholder.png",
+      "src": "./assets/ui_placeholder.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "./assets/placeholder.png",
+      "src": "./assets/ui_placeholder.png",
       "sizes": "512x512",
       "type": "image/png"
     }
