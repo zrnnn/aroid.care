@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>project.aroid | Botanical Archive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Fira+Sans:ital,wght@0,300;0,400;0,500;0,700;0,800;0,900;1,300;1,400&family=Outfit:wght@400;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        forest: {
+                            950: '#060a07',
+                            900: '#0d140e',
+                            800: '#1a241c',
+                            700: '#2d3a2f',
+                        },
+                        sage: {
+                            400: '#819067',
+                            500: '#6b7a54',
+                        },
+                        sand: {
+                            400: '#C2B280',
+                            500: '#A69668',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Fira Sans', 'sans-serif'],
+                        logo: ['Outfit', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #060a07;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Immersive background image with blur and top-to-bottom fade */
+        .bg-img-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('./assets/background_2.png');
+            background-size: cover;
+            background-position: center top;
+            filter: blur(6px);
+            opacity: 1;
+            -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.15) 100%);
+            mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.15) 100%);
+            z-index: -1;
+            pointer-events: none;
+            transform-origin: center center;
+            transform: scale(1.1) translate(0px, 0px);
+            transition: transform 0.3s ease-out;
+            will-change: transform;
+        }
+
+        /* Subtle diagonal light ray overlay */
+        .light-ray-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(130deg, 
+                transparent 10%, 
+                rgba(255, 255, 255, 0.02) 20%, 
+                rgba(255, 255, 255, 0.06) 25%, 
+                rgba(255, 255, 255, 0.02) 30%, 
+                transparent 45%
+            );
+            mix-blend-mode: overlay;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Crisp morning sun ray overlay when weather is cleared */
+        #sun-ray-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 60% -20%, rgba(255, 255, 240, 0.6) 0%, rgba(240, 255, 245, 0.25) 40%, transparent 75%),
+                        linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, transparent 40%);
+            mix-blend-mode: overlay;
+            z-index: -1;
+            pointer-events: none;
+            transition: opacity 1.5s ease-in-out;
+            opacity: 0;
+        }
+
+        .fade-in { animation: fadeIn 0.8s ease; }
+        .nav-fade-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 160px;
+            pointer-events: none;
+            z-index: 90;
+            background: linear-gradient(to bottom, 
+                rgba(6,10,7,0.2) 0%, 
+                rgba(6,10,7,0.2) 96px, 
+                rgba(6,10,7,0.15) 112px, 
+                rgba(6,10,7,0.08) 128px, 
+                rgba(6,10,7,0.02) 144px, 
+                rgba(6,10,7,0) 160px);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            -webkit-mask-image: linear-gradient(to bottom, 
+                black 0%, 
+                black 96px, 
+                rgba(0,0,0,0.8) 112px, 
+                rgba(0,0,0,0.4) 128px, 
+                rgba(0,0,0,0.1) 144px, 
+                transparent 160px);
+            mask-image: linear-gradient(to bottom, 
+                black 0%, 
+                black 96px, 
+                rgba(0,0,0,0.8) 112px, 
+                rgba(0,0,0,0.4) 128px, 
+                rgba(0,0,0,0.1) 144px, 
+                transparent 160px);
+        }
+        .slide-up { animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                inset 0 -4px 15px rgba(255, 255, 255, 0.04),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+                0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .huge-header {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(2.5rem, 8vw, 6rem);
+            line-height: 1;
+            letter-spacing: -0.02em;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-shadow: 0 4px 40px rgba(0, 0, 0, 1), 0 2px 10px rgba(0, 0, 0, 1);
+        }
+
+        .dynamic-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            line-height: 0.85;
+            letter-spacing: -0.05em;
+        }
+
+        .dynamic-quote {
+            font-size: clamp(1.15rem, 1.6vw, 1.45rem);
+            line-height: 1.6;
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .dynamic-text {
+            font-size: clamp(0.85rem, 1.1vw, 1rem);
+            line-height: 1.8;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .plant-card { transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .plant-card:hover { transform: scale(1.02); background: rgba(255, 255, 255, 0.06); }
+
+        .img-container {
+            background: #ffffff;
+            border-radius: 2.5rem;
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden; /* Ensures zoom stays inside */
+        }
+        .plant-card:hover .img-container {
+            transform: translateY(-10px);
+            box-shadow: 0 40px 80px -20px rgba(0,0,0,0.8);
+        }
+
+        .nav-link {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.6);
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 8px 20px;
+            border-radius: 9999px;
+            border: 1px solid transparent;
+        }
+        .nav-link:hover { 
+            color: rgba(255,255,255,1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .nav-link.active { 
+            color: #fff; 
+            border-color: rgba(129, 144, 103, 0.5);
+            background: rgba(129, 144, 103, 0.15);
+        }
+
+        ::selection { background: #819067; color: #000; }
+
+        @keyframes fillBar {
+            from { width: 0; }
+        }
+        .animate-bar {
+            animation: fillBar 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    
+        @media print {
+            body { background: white !important; color: black !important; filter: none !important; }
+            .bg-img-overlay, nav, footer, .hide-print, #scrollToTopBtn { display: none !important; }
+            #app-container { padding: 0 !important; margin: 0 !important; }
+            .glass { background: transparent !important; border: 1px solid #ccc !important; color: black !important; backdrop-filter: none !important; }
+            .text-white { color: black !important; }
+            .text-white\/80 { color: #333 !important; }
+            .text-white\/50, .text-white\/40, .text-white\/20 { color: #666 !important; }
+            .bg-white { background: #f0f0f0 !important; border: 1px solid #ccc !important; }
+            * { text-shadow: none !important; box-shadow: none !important; }
+        }
+    </style>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#060a07">
+    <link rel="apple-touch-icon" href="./assets/ui_placeholder.png">
+</head>
+<body class="font-sans antialiased min-h-screen">
+
+    <div class="bg-img-overlay"></div>
+    <div class="light-ray-overlay"></div>
+    <div id="sun-ray-overlay"></div>
+    <div class="nav-fade-overlay"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-[100] h-20 md:h-24 flex items-center px-4 md:px-8 lg:px-16 transition-all duration-500 bg-transparent">
+        <div class="max-w-[1800px] w-full mx-auto flex justify-between items-center relative">
+            
+            <!-- Left: Logo -->
+            <div class="cursor-pointer group glass px-3 md:px-4 py-2 rounded-full flex items-center gap-2 md:gap-3 transition-all duration-300 hover:border-sage-400/50 hover:bg-sage-400/5 z-10" onclick="navigateTo('catalog')">
+                <div class="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center shrink-0">
+                    <img src="./assets/ui_logo.png" alt="Aroid Logo" class="w-full h-full object-contain drop-shadow-lg">
+                </div>
+                <span class="text-base md:text-xl font-black tracking-widest uppercase font-logo group-hover:text-sage-400 transition-colors duration-300 hidden sm:block drop-shadow-xl text-white">Project<span class="text-sage-400">.</span>Aroid</span>
+            </div>
+            
+            <!-- Center: Navigation Links -->
+            <div class="absolute left-1/2 -translate-x-1/2 flex space-x-2 md:space-x-4 glass px-4 py-2 rounded-full z-0 hidden md:flex items-center shadow-lg">
+                <button onclick="navigateTo('catalog')" id="nav-lexikon" class="nav-link text-[10px] md:text-xs active">Archive</button>
+                <button onclick="navigateTo('firstaid')" id="nav-hilfe" class="nav-link text-[10px] md:text-xs">Diagnostics</button>
+                <button onclick="navigateTo('propagation')" id="nav-propagation" class="nav-link text-[10px] md:text-xs">Propagation</button>
+                <button onclick="navigateTo('cultivation')" id="nav-cultivation" class="nav-link text-[10px] md:text-xs">Cultivation</button>
+            </div>
+
+            <!-- Right: Search Bar & Weather Control -->
+            <div class="hidden lg:flex items-center gap-4 xl:gap-6 z-10">
+                <div class="glass px-4 py-2.5 rounded-full flex items-center gap-3 border border-white/10 shadow-xl group hover:border-sage-400/30 transition-all duration-300">
+                    <svg class="w-4 h-4 text-white/40 group-hover:text-yellow-200 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <input type="range" id="rainSlider" min="0" max="2" step="0.1" value="0" oninput="window.updateRainIntensity(this.value)" class="w-24 xl:w-32 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-sage-400">
+                    <svg class="w-4 h-4 text-white/40 group-hover:text-sky-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+                </div>
+                <div class="relative w-64 xl:w-72">
+                    <input type="text" id="searchInput" oninput="handleSearch()" class="w-full glass border border-white/10 rounded-full py-3 pl-6 pr-12 focus:outline-none focus:border-sage-400 focus:bg-white/10 transition-all duration-300 text-sm placeholder:text-white/30 text-white shadow-xl" placeholder="Search archive...">
+                    <svg class="w-4 h-4 absolute right-5 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2"/></svg>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="app-container" class="max-w-[1800px] mx-auto px-4 md:px-8 lg:px-16 pt-24 md:pt-32 pb-24 md:pb-32">
+        <!-- JS Rendering -->
+    </main>
+
+    <footer class="py-16 border-t border-white/5 text-center bg-forest-950/50">
+        <p class="text-white/20 text-[10px] font-medium tracking-widest uppercase">Project Aroid &copy; 2026. The Botanical Archive.</p>
+    </footer>
+
+    <button id="scrollToTopBtn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="fixed bottom-12 right-12 z-50 glass p-4 rounded-full shadow-2xl opacity-0 translate-y-10 transition-all duration-500 pointer-events-none hover:bg-white/10 border border-white/20">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" stroke-width="3"/></svg>
+    </button>
+    <script>
+        // Smooth Cursor Parallax for Background
+        window.addEventListener('mousemove', (e) => {
+            const bg = document.querySelector('.bg-img-overlay');
+            if (bg) {
+                // Inverted movement: Cursor left -> Image right
+                const moveX = ((e.clientX / window.innerWidth) - 0.5) * -40; // Max 20px
+                const moveY = ((e.clientY / window.innerHeight) - 0.5) * -40; // Max 20px
+                bg.style.transform = `scale(1.1) translate(${moveX}px, ${moveY}px)`;
+            }
+        });
+
+        window.addEventListener('scroll', () => {
+
+            const btn = document.getElementById('scrollToTopBtn');
+            if (window.scrollY > 500) {
+                btn.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+                btn.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+            } else {
+                btn.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+                btn.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+            }
+        });
+
+        function initHumidityEffect() {
+            // Remove old overlay if any
+            const old = document.querySelector('.fog-overlay');
+            if(old) old.remove();
+
+            const canvas = document.createElement('canvas');
+            canvas.className = 'fog-overlay';
+            canvas.style.position = 'fixed';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.width = '100vw';
+            canvas.style.height = '100vh';
+            canvas.style.pointerEvents = 'none';
+            canvas.style.zIndex = '1'; // Move above background but below actual content
+            document.body.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d', { alpha: true });
+            let width, height;
+
+            // Track UI elements for rain collision
+            let uiRects = [];
+            function updateUIRects() {
+                uiRects = [];
+                const elements = document.querySelectorAll('.glass, .bg-forest-900\\/90'); 
+                elements.forEach(el => {
+                    const rect = el.getBoundingClientRect();
+                    // Only care about visible elements
+                    if(rect.width > 0 && rect.height > 0 && rect.top < window.innerHeight && rect.bottom > 0) {
+                        uiRects.push(rect);
+                    }
+                });
+            }
+
+            function resize() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+                updateUIRects();
+            }
+            window.addEventListener('resize', resize);
+            window.addEventListener('scroll', updateUIRects);
+            setInterval(updateUIRects, 500); // Catch-all for DOM changes
+            resize();
+
+            window.rainIntensity = 0.0;
+            window.updateRainIntensity = function(val) {
+                window.rainIntensity = parseFloat(val);
+                
+                // Toggle sun ray effect based on intensity
+                const sunRay = document.getElementById('sun-ray-overlay');
+                if(sunRay) {
+                    // Fully visible at 0, slowly fading out by intensity 0.5
+                    sunRay.style.opacity = Math.max(0, 1 - (window.rainIntensity * 2));
+                }
+            };
+
+            // Layered rain drops for 3D depth effect (Opacities reduced to 70% of max)
+            const layers = [
+                { drops: [], filter: 'blur(5px)', countPercent: 1.20, speedMod: 0.6, lengthMod: 0.4, widthMod: 0.5, opacity: 0.007, interact: false },   // Far background
+                { drops: [], filter: 'blur(3px)', countPercent: 0.40, speedMod: 0.9, lengthMod: 0.7, widthMod: 0.8, opacity: 0.014, interact: true },    // Mid background
+                { drops: [], filter: 'blur(1.5px)', countPercent: 0.08, speedMod: 1.3, lengthMod: 1.2, widthMod: 1.5, opacity: 0.0245, interact: true }, // Near background
+                { drops: [], filter: 'none', countPercent: 0.02, speedMod: 1.8, lengthMod: 2.0, widthMod: 2.0, opacity: 0.042, interact: true }          // Foreground
+            ];
+
+            // Generate drops for max intensity (2.0)
+            const totalDrops = Math.floor((width * height) / 1650); // Reduced max storm capacity by 10%
+
+            for(let layer of layers) {
+                const count = Math.floor(totalDrops * layer.countPercent);
+                for(let i=0; i<count; i++) {
+                    const irregularity = Math.random() * 0.8 + 0.6;
+                    layer.drops.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        length: (Math.random() * 15 + 10) * layer.lengthMod * irregularity,
+                        baseSpeed: (Math.random() * 5 + 8) * layer.speedMod * irregularity, // Store base speed
+                        width: layer.widthMod * (Math.random() * 0.5 + 0.75),
+                        opacity: layer.opacity * (Math.random() * 0.5 + 0.75)
+                    });
+                }
+            }
+
+            const splashes = [];
+            const screenDrops = [];
+
+            // Create offscreen droplet texture for screen hits
+            const dropSize = 64;
+            const dropCanvas = document.createElement('canvas');
+            dropCanvas.width = dropSize;
+            dropCanvas.height = dropSize;
+            const dCtx = dropCanvas.getContext('2d');
+            const center = dropSize / 2;
+            const r = center * 0.8;
+            
+            dCtx.beginPath();
+            dCtx.arc(center, center, r, 0, Math.PI * 2);
+            dCtx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            dCtx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+            dCtx.shadowBlur = 8;
+            dCtx.shadowOffsetY = 2;
+            dCtx.fill();
+            
+            dCtx.shadowColor = 'transparent';
+            const dGrad = dCtx.createRadialGradient(center - r*0.3, center - r*0.3, r*0.1, center, center, r);
+            dGrad.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+            dGrad.addColorStop(1, 'rgba(255, 255, 255, 0.05)');
+            dCtx.fillStyle = dGrad;
+            dCtx.fill();
+            
+            dCtx.beginPath();
+            dCtx.arc(center, center + r*0.5, r*0.4, 0, Math.PI * 2);
+            dCtx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            dCtx.fill();
+
+            function loop() {
+                ctx.filter = 'none';
+                ctx.clearRect(0, 0, width, height);
+                ctx.lineCap = 'round';
+                
+                for(let layer of layers) {
+                    // Completely disable layer if intensity is 0
+                    if (window.rainIntensity <= 0) continue;
+
+                    ctx.filter = layer.filter;
+                    ctx.beginPath();
+                    
+                    // Only process active droplets based on intensity
+                    const activeCount = Math.floor(layer.drops.length * (window.rainIntensity / 2.0));
+                    
+                    for(let i=0; i<activeCount; i++) {
+                        let drop = layer.drops[i];
+                        const oldY = drop.y;
+                        ctx.moveTo(drop.x, drop.y);
+                        
+                        // Dynamic length based on intensity (faster = longer motion blur streak)
+                        const currentLength = drop.length * Math.max(1, window.rainIntensity);
+                        
+                        // Diagonal fall
+                        ctx.lineTo(drop.x + currentLength * 0.15, drop.y + currentLength);
+                        
+                        // Calculate dynamic speed
+                        const currentSpeed = drop.baseSpeed * Math.max(0.1, window.rainIntensity);
+                        
+                        drop.x += currentSpeed * 0.15;
+                        drop.y += currentSpeed;
+                        const newY = drop.y + currentLength;
+
+                        // Collision detection
+                        let collided = false;
+                        if(layer.interact && window.rainIntensity > 0) {
+                            for(let rect of uiRects) {
+                                // Check if drop tip crossed the top edge of a UI element. Use a slightly expanded hit area.
+                                if(oldY + currentLength <= rect.top + 5 && newY >= rect.top - 5 && drop.x >= rect.left && drop.x <= rect.right) {
+                                    collided = true;
+                                    
+                                    // Spawn splashes based on intensity
+                                    const splashCount = Math.floor(Math.random() * 2 * window.rainIntensity) + 1; 
+                                    for(let j=0; j<splashCount; j++) {
+                                        splashes.push({
+                                            x: drop.x + currentLength * 0.15,
+                                            y: rect.top,
+                                            vx: (Math.random() - 0.5) * 4 + 0.5,
+                                            vy: -(Math.random() * 2 + 1.5),
+                                            life: Math.random() * 10 + 5,
+                                            maxLife: 15,
+                                            opacity: Math.min(layer.opacity * 4 + 0.1, 0.6)
+                                        });
+                                    }
+                                    
+                                    // Reset drop
+                                    drop.y = -currentLength - (Math.random() * 100);
+                                    drop.x = Math.random() * width;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if(!collided) {
+                            // Wrap around
+                            if(drop.y > height) {
+                                drop.y = -currentLength - (Math.random() * 100);
+                                drop.x = Math.random() * width;
+                            }
+                            if(drop.x > width) {
+                                drop.x = 0;
+                            }
+                        }
+                    }
+                    
+                    // Stroke the active layer with dynamically scaled opacity and thickness
+                    if(activeCount > 0) {
+                        // Exponential scaling for max rain reduced by another 10%
+                        const intensityMod = window.rainIntensity <= 1.0 
+                            ? 0.5 + (window.rainIntensity * 0.5) 
+                            : 1.0 + Math.pow(window.rainIntensity - 1.0, 1.5) * 1.8; 
+                            
+                        ctx.lineWidth = layer.drops[0].width * intensityMod; 
+                        // Tinted slightly green/sage to simulate refraction of the forest background
+                        ctx.strokeStyle = `rgba(215, 235, 220, ${layer.opacity * intensityMod})`;
+                        ctx.stroke();
+                    }
+                }
+
+                // Draw splashes
+                if(splashes.length > 0) {
+                    ctx.filter = 'none';
+                    for(let i=splashes.length-1; i>=0; i--) {
+                        let s = splashes[i];
+                        ctx.beginPath();
+                        ctx.moveTo(s.x, s.y);
+                        // Draw a short trailing line for the splash particle
+                        ctx.lineTo(s.x + s.vx * 1.5, s.y + s.vy * 1.5);
+                        ctx.lineWidth = 1.5;
+                        // Fade out over life
+                        const currentOpacity = s.opacity * (s.life / s.maxLife);
+                        // Tinted splashes
+                        ctx.strokeStyle = `rgba(215, 235, 220, ${currentOpacity})`;
+                        ctx.stroke();
+
+                        s.x += s.vx;
+                        s.y += s.vy;
+                        s.vy += 0.5; // gravity pulls it down
+                        s.life--;
+
+                        if(s.life <= 0) {
+                            splashes.splice(i, 1);
+                        }
+                    }
+                }
+
+                // Update and render full-screen droplet masks
+                if (screenDrops.length < 6 * window.rainIntensity && Math.random() < 0.05 * window.rainIntensity) {
+                    screenDrops.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        size: Math.random() * 120 + 120, // 120px to 240px (reduced max size to ~70%)
+                        life: 0,
+                        maxLife: Math.random() * 60 + 60, // 1 to 2 seconds
+                    });
+                }
+
+                if (screenDrops.length > 0 || blurLayer.style.maskImage !== 'none') {
+                    let masks = [];
+                    let bgGradients = [];
+                    for (let i = screenDrops.length - 1; i >= 0; i--) {
+                        let sd = screenDrops[i];
+                        sd.life++;
+                        
+                        if (sd.life >= sd.maxLife) {
+                            screenDrops.splice(i, 1);
+                            continue;
+                        }
+
+                        let opacity = 1;
+                        if (sd.life < 15) opacity = sd.life / 15;
+                        else if (sd.life > sd.maxLife - 30) opacity = (sd.maxLife - sd.life) / 30;
+                        
+                        // Limit max opacity to keep the blur soft and subtle
+                        opacity *= 0.8;
+
+                        masks.push(`radial-gradient(${sd.size/2}px circle at ${sd.x}px ${sd.y}px, rgba(0,0,0,${opacity}) 0%, rgba(0,0,0,0) 100%)`);
+                        bgGradients.push(`radial-gradient(${sd.size/2}px circle at ${sd.x}px ${sd.y}px, rgba(255,255,255,${opacity * 0.03}) 0%, rgba(255,255,255,0) 100%)`);
+                    }
+
+                    if (masks.length > 0) {
+                        const maskStr = masks.join(', ');
+                        blurLayer.style.display = 'block';
+                        blurLayer.style.maskImage = maskStr;
+                        blurLayer.style.WebkitMaskImage = maskStr;
+                        blurLayer.style.backgroundImage = bgGradients.join(', ');
+                    } else {
+                        blurLayer.style.display = 'none';
+                    }
+                }
+
+                requestAnimationFrame(loop);
+            }
+            
+            // Full-screen blur layer for flawless soft-edge droplets
+            const blurLayer = document.createElement('div');
+            blurLayer.style.position = 'fixed';
+            blurLayer.style.inset = '0';
+            blurLayer.style.pointerEvents = 'none';
+            blurLayer.style.zIndex = '9998'; 
+            blurLayer.style.backdropFilter = 'blur(10px)';
+            blurLayer.style.WebkitBackdropFilter = 'blur(10px)';
+            blurLayer.style.display = 'none'; // hide by default
+            document.body.appendChild(blurLayer);
+            
+            loop();
+        }
+
+        document.addEventListener('DOMContentLoaded', initHumidityEffect);
+
+    </script>
+
+    <script src="database.js"></script>
+    <script>
+        // --- NAVIGATION & ROUTING ---
+        let currentSearchTerm = '';
+
+        function navigateTo(view, params = {}, pushState = true) {
+            if (pushState) {
+                const url = new URL(window.location);
+                url.searchParams.set('view', view);
+                ['id', 'filter'].forEach(p => url.searchParams.delete(p));
+                for (const [key, value] of Object.entries(params)) { url.searchParams.set(key, value); }
+                try {
+                    history.pushState({ view, params }, '', url);
+                } catch (e) {
+                    console.warn("History pushState failed. This is expected if running from a local file:// URI.");
+                }
+            }
+            if(view !== 'catalog') {
+                document.getElementById('searchInput').value = '';
+                currentSearchTerm = '';
+            }
+            renderView(view, params);
+        }
+
+        function renderView(view, params) {
+            updateNav(view);
+            switch (view) {
+                case 'catalog': showCatalog(params.filter || ''); break;
+                case 'detail': showPlantDetail(Number(params.id)); break;
+                case 'diagnosticDetail': showDiagnosticDetail(params.type, params.id); break;
+                case 'firstaid': showFirstAid(); break;
+                case 'propagation': showPropagation(); break;
+                case 'cultivation': showCultivation(); break;
+                default: showCatalog();
+            }
+            if (params && params.hash) {
+                setTimeout(() => {
+                    const el = document.getElementById(params.hash);
+                    if (el) {
+                        const y = el.getBoundingClientRect().top + window.scrollY - 100;
+                        window.scrollTo({top: y, behavior: 'smooth'});
+                    }
+                }, 150);
+            }
+        }
+
+        function updateNav(view) {
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            if(view === 'catalog') document.getElementById('nav-lexikon').classList.add('active');
+            if(view === 'firstaid') document.getElementById('nav-hilfe').classList.add('active');
+            if(view === 'propagation') document.getElementById('nav-propagation').classList.add('active');
+            if(view === 'cultivation') document.getElementById('nav-cultivation').classList.add('active');
+        }
+
+        window.onpopstate = (e) => {
+            if (e.state) renderView(e.state.view, e.state.params);
+            else handleInitialLoad();
+        };
+
+        function handleInitialLoad() {
+            const urlParams = new URLSearchParams(window.location.search);
+            renderView(urlParams.get('view') || 'catalog', { id: urlParams.get('id'), filter: urlParams.get('filter') });
+        }
+
+        const appContainer = document.getElementById('app-container');
+
+        // --- VIEWS ---
+
+
+        function showCatalog(filter = '') {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            let plants = [...plantsData];
+
+            if (currentSearchTerm) {
+                const term = currentSearchTerm.toLowerCase();
+                plants = plants.filter(p => p.n.toLowerCase().includes(term) || p.g.toLowerCase().includes(term) || p.feat.toLowerCase().includes(term));
+            } else if (filter === 'Variegata') {
+                plants = plants.filter(p => p.n.match(/Variegata|Albo|Thai|Aurea/i));
+            } else if (filter === 'diff-easy') {
+                plants = plants.filter(p => p.lvl && p.lvl.includes('Beginner'));
+            } else if (filter === 'diff-medium') {
+                plants = plants.filter(p => p.lvl && (p.lvl.includes('Advanced') || p.lvl.includes('Medium')));
+            } else if (filter === 'diff-hard') {
+                plants = plants.filter(p => p.lvl && p.lvl.includes('Expert'));
+            } else if (filter) {
+                plants = plants.filter(p => p.g === filter);
+            }
+
+            // Simple alphabetical sort
+            plants.sort((a, b) => a.n.localeCompare(b.n));
+
+            let html = `
+                <div class="fade-in">
+                    <div class="lg:hidden w-full mb-12 slide-up">
+                        <input type="text" id="mobileSearchInput" oninput="document.getElementById('searchInput').value=this.value; handleSearch()" class="w-full glass border border-white/10 rounded-full py-4 px-8 focus:outline-none focus:border-sage-400 focus:bg-white/10 transition-all duration-300 text-sm placeholder:text-white/30 text-white shadow-xl" placeholder="Search archive..." value="${currentSearchTerm}">
+                    </div>
+                    ${!currentSearchTerm ? `
+                    <div class="mb-32 md:mb-48 slide-up mt-12 md:mt-20">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-32 items-center relative">
+                            <div class="lg:col-span-5 flex flex-col items-start">
+                                <h1 class="huge-header scroll-blur mb-6">Cultivate<br/><span class="text-sage-400">Life</span></h1>
+                                <p class="text-white/60 text-sm md:text-base font-medium tracking-widest uppercase mb-10 max-w-xs leading-relaxed">Discover the rare, the strange, and the beautiful.</p>
+                                <button onclick="window.scrollTo({top: window.innerHeight * 0.8, behavior: 'smooth'})" class="px-8 py-4 rounded-full glass border border-white/20 text-xs font-black uppercase tracking-widest text-white hover:bg-white/10 hover:text-sage-400 flex items-center gap-4 transition-all shadow-xl group">
+                                    Explore Archive <svg class="w-5 h-5 group-hover:translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" stroke-width="2"/></svg>
+                                </button>
+                            </div>
+                            <div class="lg:col-span-7 mt-12 lg:mt-0 scroll-blur relative">
+                                <div class="absolute inset-0 bg-forest-950/40 backdrop-blur-md rounded-[2rem] -z-10 shadow-2xl border border-white/5 pointer-events-none"></div>
+                                <div class="p-8 md:p-12">
+                                    <p class="dynamic-quote font-normal text-white italic mb-8 md:mb-12 border-l-2 border-sage-400 pl-6 md:pl-10 drop-shadow-xl">"A plant is a mirror of its environment, a perfect architectural response to the pressures of life."<br/><span class="text-sm md:text-lg text-sage-400 mt-4 block font-black tracking-wide uppercase drop-shadow-md">— Project.Aroid</span></p>
+                                    <p class="dynamic-text font-medium text-white/90 pl-6 md:pl-10 drop-shadow-xl mb-4">Welcome to a living archive of tropical diversity. Deep within the understory of dense rainforests, where the air hangs heavy with moisture and light is a precious commodity, the Araceae family has evolved incredible adaptations.</p>
+                                    <p class="dynamic-text font-medium text-white/90 pl-6 md:pl-10 drop-shadow-xl">From the massive, fenestrated leaves of the Monstera catching dappled sunlight, to the dark, velvety textures of Anthuriums engineered to absorb every photon—this collection documents the breathtaking beauty of these botanical masterpieces. Step into the humidity and explore.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-center mt-12 md:mt-24 mb-8">
+                            <svg class="w-8 h-8 text-white/30 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" stroke-width="2"/></svg>
+                        </div>
+
+                        <div class="flex flex-col gap-6 mt-8 border-b border-white/20 pb-8">
+                            <div class="flex flex-col gap-6 md:gap-8">
+                                <div class="flex flex-col md:flex-row md:items-center gap-4">
+                                    <h3 class="text-[10px] font-black uppercase tracking-widest text-white/60 drop-shadow-md w-24 shrink-0">Genus</h3>
+                                    <div class="flex flex-wrap gap-2 md:gap-3 flex-1">
+                                        ${['Monstera', 'Philodendron', 'Anthurium', 'Alocasia', 'Syngonium', 'Hoya', 'Ficus', 'Dracaena', 'Epipremnum', 'Calathea', 'Strelitzia', 'Zamioculcas', 'Variegata'].map(cat => 
+                                            `<button onclick="navigateTo('catalog', {filter: '${cat}'})" class="px-5 md:px-6 py-2 md:py-2.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest border transition-all duration-300 ease-in-out shadow-xl ${filter === cat ? 'bg-sage-400 text-forest-950 border-sage-400 font-bold' : 'border-white/30 text-white/90 hover:border-sage-400 hover:text-sage-400 hover:bg-sage-400/20 font-bold'}">${cat === 'Variegata' ? '✦ Variegated' : cat}</button>`
+                                        ).join('')}
+                                    </div>
+                                </div>
+                                <div class="w-full h-px bg-white/10 hidden md:block"></div>
+                                <div class="flex flex-col md:flex-row md:items-center gap-4">
+                                    <h3 class="text-[10px] font-black uppercase tracking-widest text-white/60 drop-shadow-md w-24 shrink-0">Care Level</h3>
+                                    <div class="flex flex-wrap gap-2 md:gap-3 flex-1">
+                                        <button onclick="navigateTo('catalog', {filter: 'diff-easy'})" class="px-5 md:px-6 py-2 md:py-2.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest border transition-all duration-300 ease-in-out shadow-xl flex items-center gap-2 md:gap-3 ${filter === 'diff-easy' ? 'bg-sage-400 text-forest-950 border-sage-400 font-bold' : 'border-white/30 text-white/90 hover:border-sage-400 hover:text-sage-400 hover:bg-sage-400/20 font-bold'}">
+                                            ${filter === 'diff-easy' ? '<div class="w-2 h-2 rounded-full bg-forest-950/40 border border-forest-950/60"></div>' : '<div class="w-2 h-2 rounded-full bg-emerald-500/30 border border-emerald-400/40"></div>'} Novice
+                                        </button>
+                                        <button onclick="navigateTo('catalog', {filter: 'diff-medium'})" class="px-5 md:px-6 py-2 md:py-2.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest border transition-all duration-300 ease-in-out shadow-xl flex items-center gap-2 md:gap-3 ${filter === 'diff-medium' ? 'bg-sage-400 text-forest-950 border-sage-400 font-bold' : 'border-white/30 text-white/90 hover:border-sage-400 hover:text-sage-400 hover:bg-sage-400/20 font-bold'}">
+                                            ${filter === 'diff-medium' ? '<div class="w-2 h-2 rounded-full bg-forest-950/40 border border-forest-950/60"></div>' : '<div class="w-2 h-2 rounded-full bg-amber-500/30 border border-amber-400/40"></div>'} Advanced
+                                        </button>
+                                        <button onclick="navigateTo('catalog', {filter: 'diff-hard'})" class="px-5 md:px-6 py-2 md:py-2.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest border transition-all duration-300 ease-in-out shadow-xl flex items-center gap-2 md:gap-3 ${filter === 'diff-hard' ? 'bg-sage-400 text-forest-950 border-sage-400 font-bold' : 'border-white/30 text-white/90 hover:border-sage-400 hover:text-sage-400 hover:bg-sage-400/20 font-bold'}">
+                                            ${filter === 'diff-hard' ? '<div class="w-2 h-2 rounded-full bg-forest-950/40 border border-forest-950/60"></div>' : '<div class="w-2 h-2 rounded-full bg-rose-500/30 border border-rose-400/40"></div>'} Expert
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>` : `
+                    <div class="mb-20 slide-up">
+                        <h2 class="text-2xl md:text-4xl font-black uppercase tracking-tighter text-white/50">Search Results for: <span class="text-white">${currentSearchTerm}</span></h2>
+                    </div>`}
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-12 gap-y-24 slide-up" style="animation-delay: 0.1s;">
+            `;
+
+            if(plants.length === 0) {
+                html += `<div class="col-span-full py-20 text-xl font-light text-white/40">No specimens found.</div>`;
+            }
+
+            plants.forEach(p => {
+                const slug = p.n.replace(/\(Non-Aroid\)/g, '').replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/_$/, '');
+                html += `
+                    <div class="glass p-6 md:p-8 rounded-[2rem] group cursor-pointer relative hover:bg-white/5 transition-all duration-500 flex flex-col h-full" onclick="navigateTo('detail', {id: ${p.id}})">
+                        <div class="absolute top-10 left-10 z-20 px-4 py-1.5 bg-forest-950/80 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-widest rounded-full border border-white/10 shadow-lg">
+                            ${p.lvl}
+                        </div>
+                        <div class="img-container aspect-[4/5] mb-8 flex items-center justify-center relative overflow-hidden rounded-2xl bg-white/5">
+                            <img src="./assets/plant_${slug.toLowerCase()}.jpg" onerror="this.onerror=null; this.src='./assets/ui_placeholder.png';" class="w-full h-full object-cover mix-blend-multiply opacity-90 transition-transform duration-1000 scale-[1.15] group-hover:scale-125">
+                        </div>
+                        <div class="flex flex-col flex-grow">
+                            <span class="text-[9px] font-black text-sage-400 uppercase tracking-widest block mb-3">${p.g}</span>
+                            <h3 class="text-xl md:text-2xl font-black tracking-tighter uppercase leading-tight mb-4">${p.n}</h3>
+                            <p class="text-white/40 text-[10px] md:text-xs font-medium leading-relaxed line-clamp-2 mt-auto">${p.feat}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div></div>`;
+            appContainer.innerHTML = html;
+        }
+
+        function showPlantDetail(id) {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            const p = plantsData.find(x => x.id === id);
+            if (!p) {
+                navigateTo('catalog');
+                return;
+            }
+            const defaults = genusDefaults[p.g] || genusDefaults['Other'];
+            const slug = p.n.replace(/\(Non-Aroid\)/g, '').replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/_$/, '');
+            const stats = { ...defaults.stats, ...(p.override || {}) };
+
+            appContainer.innerHTML = `
+                <div class="fade-in max-w-[1600px] mx-auto">
+
+                    <button onclick="navigateTo('catalog')" class="mb-16 md:mb-24 px-6 py-3 rounded-full glass border border-white/20 text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10 hover:text-sage-400 flex items-center gap-3 w-fit transition-all shadow-xl">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="3"/></svg> Back to Archive
+                    </button>
+
+                    <div class="grid grid-cols-1 xl:grid-cols-12 gap-12 lg:gap-16 items-start">
+                        <div class="xl:col-span-5 slide-up sticky top-32">
+                            <div class="bg-white rounded-[2rem] aspect-[4/5] flex items-center justify-center shadow-2xl relative overflow-hidden">
+                                <img src="./assets/plant_${slug.toLowerCase()}.jpg" onerror="this.onerror=null; this.src='./assets/ui_placeholder.png';" class="w-full h-full object-cover mix-blend-multiply transition-transform duration-700 scale-[1.15] hover:scale-125">
+                            </div>
+                        </div>
+                        <div class="xl:col-span-7 slide-up" style="animation-delay: 0.1s;">
+                            <span class="text-[10px] md:text-xs font-black text-sage-400 uppercase tracking-[0.4em] mb-4 block">${p.g}</span>
+                            <h1 class="dynamic-title font-black uppercase mb-6 md:mb-10">${p.n}</h1>
+                            
+                            <div class="mb-10 md:mb-14 bg-forest-950/40 backdrop-blur-md p-8 md:p-10 rounded-[2rem] shadow-2xl border border-white/5 relative">
+                                <div class="space-y-4">
+                                    ${p.feat.replace(/(tissue culture|micropropagation)/gi, `<a onclick="navigateTo('propagation', {hash: 'micropropagation'})" class="text-sage-400 hover:text-white underline decoration-sage-400/30 underline-offset-4 cursor-pointer transition-colors">$1</a>`).split(/(?<=[.?!])\s+/).map(sentence => `<p class="dynamic-quote font-light text-white/80 leading-relaxed">${sentence}</p>`).join('')}
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-white/5 pt-10 mb-12">
+                                <div class="group hover:bg-white/5 p-6 -m-6 rounded-[2rem] transition-all duration-300 cursor-default hover:-translate-y-1 border border-transparent hover:border-white/10"><h4 class="text-[9px] font-black text-white/20 uppercase tracking-widest mb-4 group-hover:text-sage-400 transition-colors">Origin</h4><p class="text-lg">${p.origin || 'Unknown'}</p></div>
+                                <div class="group hover:bg-white/5 p-6 -m-6 rounded-[2rem] transition-all duration-300 cursor-default hover:-translate-y-1 border border-transparent hover:border-white/10"><h4 class="text-[9px] font-black text-white/20 uppercase tracking-widest mb-4 group-hover:text-sage-400 transition-colors">Natural Habitat</h4><p class="text-lg">${p.habitat || 'Unknown'}</p></div>
+                                ${p.trivia ? `<div class="md:col-span-2 group hover:bg-white/5 p-6 -m-6 rounded-[2rem] transition-all duration-300 cursor-default hover:-translate-y-1 border border-transparent hover:border-white/10"><h4 class="text-[9px] font-black text-sage-400 uppercase tracking-widest mb-4">Special Trait</h4><p class="text-lg font-light">${p.trivia}</p></div>` : ''}
+                            </div>
+
+                            <h3 class="text-xl md:text-2xl font-black uppercase tracking-tighter mb-6">Care Parameters</h3>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-16">
+                                <div class="glass p-6 rounded-[2rem] hover:bg-white/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer group" onclick="navigateTo('cultivation', {hash: 'lighting'})"><span class="text-[9px] font-black text-white/20 uppercase mb-2 block group-hover:text-sage-400 transition-colors">Light</span><p class="text-base font-bold">${p.ppfd ? p.ppfd + ' µmol/m²/s' : stats.light}</p></div>
+                                <div class="glass p-6 rounded-[2rem] hover:bg-white/10 hover:-translate-y-1 transition-all duration-300 cursor-default group"><span class="text-[9px] font-black text-white/20 uppercase mb-2 block group-hover:text-sage-400 transition-colors">Water</span><p class="text-base font-bold">${stats.water}</p></div>
+                                <div class="glass p-6 rounded-[2rem] hover:bg-white/10 hover:-translate-y-1 transition-all duration-300 cursor-default group"><span class="text-[9px] font-black text-white/20 uppercase mb-2 block group-hover:text-sage-400 transition-colors">Humidity</span><p class="text-base font-bold">${stats.humidity}</p></div>
+                                <div class="glass p-6 rounded-[2rem] hover:bg-white/10 hover:-translate-y-1 transition-all duration-300 cursor-default group"><span class="text-[9px] font-black text-white/20 uppercase mb-2 block group-hover:text-sage-400 transition-colors">Toxicity</span><p class="text-base font-bold">${stats.tox}</p></div>
+                                <div class="glass p-6 rounded-[2rem] hover:bg-white/10 hover:-translate-y-1 transition-all duration-300 cursor-default group"><span class="text-[9px] font-black text-white/20 uppercase mb-2 block group-hover:text-sage-400 transition-colors">Difficulty</span><p class="text-base font-bold">${stats.diff}</p></div>
+                                <div class="glass p-6 rounded-[2rem] hover:bg-white/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer group" onclick="navigateTo('cultivation', {hash: 'water-chemistry'})"><span class="text-[9px] font-black text-white/20 uppercase mb-2 block group-hover:text-sage-400 transition-colors">Fertilizer</span><p class="text-base font-bold">${p.ec ? p.ec + ' EC' : stats.fert}</p></div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 border-t border-white/5 pt-10">
+                                <div>
+                                    <h3 class="text-2xl font-black uppercase tracking-tighter mb-6">Substrate Needs</h3>
+                                    <div class="space-y-8">
+                                        <div>
+                                            <h4 class="text-[9px] font-black text-sage-400 uppercase tracking-widest mb-2">Organic Blend</h4>
+                                            <p class="font-bold mb-4">${defaults.substrate.organic.name}</p>
+                                            <div class="w-full h-2 rounded-full flex overflow-hidden mb-4 border border-white/10">
+                                                ${defaults.substrate.organic.mix.map((m, i) => {
+                                                    const colors = ['bg-[#819067]', 'bg-[#6b7a54]', 'bg-[#4a5538]', 'bg-[#2d3a2f]', 'bg-[#1a241c]'];
+                                                    return `<div style="width: ${m.p}%" class="${colors[i % colors.length]} h-full animate-bar" title="${m.n}"></div>`;
+                                                }).join('')}
+                                            </div>
+                                            <ul class="text-xs font-bold tracking-wider uppercase text-white/50 flex flex-wrap gap-x-2 gap-y-2">
+                                                ${defaults.substrate.organic.mix.map((m, i) => {
+                                                    const colors = ['text-[#819067]', 'text-[#6b7a54]', 'text-[#4a5538]', 'text-[#2d3a2f]', 'text-[#1a241c]'];
+                                                    return `<li class="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/5 hover:text-white transition-all duration-300 cursor-default group hover:-translate-y-0.5"><div class="w-2 h-2 rounded-full ${colors[i % colors.length].replace('text-', 'bg-')} group-hover:scale-150 transition-transform"></div>${m.p}% ${m.n}</li>`;
+                                                }).join('')}
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-[9px] font-black text-sage-400 uppercase tracking-widest mb-2">Mineral Blend</h4>
+                                            <p class="font-bold mb-4">${defaults.substrate.mineral.name}</p>
+                                            <div class="w-full h-2 rounded-full flex overflow-hidden mb-4 border border-white/10">
+                                                ${defaults.substrate.mineral.mix.map((m, i) => {
+                                                    const colors = ['bg-[#B1AB86]', 'bg-[#8A8568]', 'bg-[#63604B]', 'bg-[#424032]', 'bg-[#212019]'];
+                                                    return `<div style="width: ${m.p}%" class="${colors[i % colors.length]} h-full animate-bar" title="${m.n}"></div>`;
+                                                }).join('')}
+                                            </div>
+                                            <ul class="text-xs font-bold tracking-wider uppercase text-white/50 flex flex-wrap gap-x-2 gap-y-2">
+                                                ${defaults.substrate.mineral.mix.map((m, i) => {
+                                                    const colors = ['text-[#B1AB86]', 'text-[#8A8568]', 'text-[#63604B]', 'text-[#424032]', 'text-[#212019]'];
+                                                    return `<li class="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/5 hover:text-white transition-all duration-300 cursor-default group hover:-translate-y-0.5"><div class="w-2 h-2 rounded-full ${colors[i % colors.length].replace('text-', 'bg-')} group-hover:scale-150 transition-transform"></div>${m.p}% ${m.n}</li>`;
+                                                }).join('')}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-black uppercase tracking-tighter mb-6">Common Pests</h3>
+                                    <ul class="space-y-4">
+                                        ${defaults.pests.map(pest => {
+                                            let pid = pest.split('(')[0].trim().toLowerCase().replace(/ /g, '_');
+                                            if (pid === 'scale_insects') pid = 'scale';
+                                            const hasDiag = pestData.some(d => d.id === pid);
+                                            return `<li class="glass p-6 rounded-2xl text-sm font-medium flex items-center gap-4 ${hasDiag ? 'cursor-pointer hover:bg-red-500/10 group/pest' : ''} transition-all" ${hasDiag ? `onclick="navigateTo('diagnosticDetail', {type: 'pest', id: '${pid}'})"` : ''}>
+                                                <div class="w-2 h-2 rounded-full bg-red-500 ${hasDiag ? 'group-hover/pest:scale-150' : ''} transition-transform"></div>${pest}
+                                            </li>`;
+                                        }).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+                const diagnosticsData = [
+            { id: 'nitrogen', name: 'Nitrogen (N)', desc: 'General yellowing of older leaves. Growth slows significantly. Essential for foliage.', story: 'The oldest leaves slowly sacrifice themselves, their vibrant green fading into a sickly yellow as the plant desperately cannibalizes its own nitrogen reserves to fuel new growth at the canopy.', scientific: 'Nitrogen is highly mobile within the plant. When deficient, the plant salvages nitrogen from older leaves to support new growth, causing the classic bottom-up chlorosis.', spotting: 'Starts as a pale, uniform yellowing on the lowest, oldest leaves. The yellowing progresses upwards if left untreated. Leaves may eventually drop.', treatment: 'Apply a balanced liquid fertilizer or a nitrogen-rich amendment like blood meal or worm castings. Results are usually visible within a week.', similar: 'Sulfur deficiency (which affects whole plant/new leaves) or root rot (accompanied by wilting).', mechanism: 'Cellular degradation of chlorophyll in older tissues.' },
+            { id: 'phosphorus', name: 'Phosphorus (P)', desc: 'Purple tint on leaf undersides or abnormally dark green foliage. Crucial for roots.', story: 'Deep within the soil, the roots struggle to gather energy. A cold, purple tint begins to creep across the undersides of the foliage, a silent cry for the phosphorus needed to process light.', scientific: 'Phosphorus is vital for energy transfer (ATP) and root development. A lack of P leads to an accumulation of anthocyanins, causing the purple/red pigmentation.', spotting: 'Older leaves turn unusually dark green, often developing purple or bronze hues on the undersides or margins. Growth is stunted.', treatment: 'Use a high-phosphorus bloom booster or bone meal. Ensure pH is balanced, as P is easily locked out in highly acidic or alkaline soils.', similar: 'Cold stress (which also causes purple anthocyanin expression) or natural variegation.', mechanism: 'Inability to convert light energy into chemical energy.' },
+            { id: 'potassium', name: 'Potassium (K)', desc: 'Yellow margins on older leaves, turning brown and crispy. Important for drought resistance.', story: 'As the plant fails to regulate its water pressure, the margins of the oldest leaves begin to scorch. Yellow edges quickly turn into dry, crispy brown halos, signaling a systemic collapse in drought resistance.', scientific: 'Potassium regulates stomatal opening/closing and water transport. Deficiency leads to poor water pressure (turgor) and cell death at the leaf extremities.', spotting: 'The edges (margins) of older leaves turn yellow, then quickly become brown, dry, and necrotic (crispy).', treatment: 'Flush the soil to remove potential salt buildup, then feed with a potassium-rich fertilizer or kelp meal.', similar: 'Underwatering or low humidity (which also cause crispy edges).', mechanism: 'Failure of stomatal regulation leading to localized cellular dehydration.' },
+            { id: 'calcium', name: 'Calcium (Ca)', desc: 'New leaves emerge deformed, stunted, or crinkled. Edges may brown or die off.', story: 'The newest leaves emerge deformed and stunted, their edges ripped and crinkled. Without calcium to build strong cell walls, the fragile new tissue literally tears itself apart as it tries to expand.', scientific: 'Calcium is immobile. It is a critical structural component of cell walls. When deficient, new cells cannot form properly, leading to severe structural deformities.', spotting: 'Newest leaves are small, twisted, cupped downwards, or have ripped, necrotic edges. Often called "tip burn".', treatment: 'Foliar spray with Cal-Mag, or amend soil with dolomite lime/crushed eggshells. Do not over-fertilize with potassium, which blocks calcium.', similar: 'Pest damage (like thrips) which also deform new growth.', mechanism: 'Collapse of cell wall integrity in rapidly dividing meristematic tissue.' },
+            { id: 'magnesium', name: 'Magnesium (Mg)', desc: 'Interveinal chlorosis on older leaves (yellowing between the green veins).', story: 'A striking, skeletal pattern emerges on the oldest leaves. The veins remain starkly green, but the tissue between them drains of color, leaving a pale, ghostly chlorosis as the plant fails to synthesize chlorophyll.', scientific: 'Magnesium is the central atom in the chlorophyll molecule. It is mobile, so the plant steals it from older leaves to keep new leaves green.', spotting: 'The tissue between the veins of older leaves turns pale yellow or white, while the veins themselves remain starkly green.', treatment: 'Apply a Cal-Mag solution or Epsom salts (magnesium sulfate) diluted in water.', similar: 'Iron deficiency (which looks identical but occurs on NEW leaves, not old).', mechanism: 'Inability to synthesize new chlorophyll molecules.' },
+            { id: 'iron', name: 'Iron (Fe)', desc: 'Interveinal chlorosis on new leaves. The veins stay stark green while the leaf turns yellow/white.', story: 'At the very apex of the plant, the newest growth emerges ghostly white or pale yellow. The stark green veins stand out in high contrast, signaling a complete failure of chloroplast development in the meristem.', scientific: 'Iron is immobile and essential for chloroplast function. Without it, new tissue cannot produce chlorophyll, despite having enough magnesium.', spotting: 'The newest leaves emerge pale yellow, nearly white, with a stark, contrasting network of dark green veins.', treatment: 'Check soil pH (iron is locked out above pH 6.5). Lower pH if necessary, and apply chelated iron.', similar: 'Magnesium deficiency (occurs on OLD leaves) or Zinc deficiency.', mechanism: 'Blockage of chloroplast development in apical meristems.' },
+            { id: 'manganese', name: 'Manganese (Mn)', desc: 'Similar to Iron, but often accompanied by brown necrotic spots between veins.', story: 'Similar to iron deficiency, the new leaves emerge pale and ghost-like, but soon develop sunken, brown necrotic spots—a result of localized oxidative stress and cell death.', scientific: 'Manganese aids in water splitting during photosynthesis. Deficiency causes localized chloroplast failure and cell death.', spotting: 'Interveinal chlorosis on new leaves, quickly followed by small, sunken brown necrotic spots in the yellow areas.', treatment: 'Usually a high pH issue (>6.5). Flush soil and correct pH. Apply a micronutrient blend.', similar: 'Iron deficiency (Iron lacks the necrotic spots).', mechanism: 'Oxidative stress leading to localized necrosis.' },
+            { id: 'zinc', name: 'Zinc (Zn)', desc: 'Rosetting (leaves growing tightly together) and unusually small new leaves.', story: 'Growth comes to a sudden, cramped halt. The internodes fail to elongate, causing miniature, bunched-up new leaves to form a tight, unnatural rosette at the growing tip.', scientific: 'Zinc is required for the synthesis of auxin (a growth hormone). Without it, internodes fail to elongate.', spotting: 'New leaves are miniature and bunched tightly together (rosetting). Sometimes mild interveinal chlorosis.', treatment: 'Apply a comprehensive micronutrient foliar spray. Ensure phosphorus levels are not excessively high.', similar: 'Light starvation (though low light usually causes stretching, not rosetting).', mechanism: 'Failure of internodal elongation due to auxin deficiency.' },
+            { id: 'copper', name: 'Copper (Cu)', desc: 'New leaves are dark green and twisted/misshapen, sometimes with necrotic spots.', story: 'The structural integrity of the plant begins to fail. New growth emerges unusually dark, twisted, and misshapen, the stems lacking the rigidity needed to hold the leaves aloft.', scientific: 'Copper is involved in lignin synthesis and respiration. Deficiency leads to weak stems and deformed tissue.', spotting: 'New growth is unusually dark, twisted, or distorted. Stems may lack rigidity.', treatment: 'Very rare. Treat with a broad-spectrum micronutrient fertilizer.', similar: 'Herbicide damage or severe calcium deficiency.', mechanism: 'Failure of structural lignin formation.' },
+            { id: 'sulfur', name: 'Sulfur (S)', desc: 'Uniform yellowing across the entire plant, affecting both new and old leaves simultaneously.', story: 'Unlike mobile nutrients that affect only old or new leaves, a sulfur deficiency casts a pale, sickly yellow-green pallor over the entire plant simultaneously, as critical protein synthesis grinds to a halt.', scientific: 'Sulfur is a component of essential amino acids (cystine, methionine). It is semi-mobile, affecting the whole plant evenly.', spotting: 'The entire plant takes on a pale, sickly yellow-green hue. Stems may become thin and woody.', treatment: 'Epsom salts (primarily for Mg, but contains sulfur) or a standard balanced fertilizer.', similar: 'Nitrogen deficiency (N affects bottom leaves first).', mechanism: 'Inability to synthesize critical proteins across all tissues.' }
+        ];
+
+        const pestData = [
+            { id: 'spider_mites', name: 'Spider Mites (Tetranychidae)', desc: 'Microscopic arachnids that cause stippling, yellowing, and fine webbing on leaf undersides. Thrives in dry air. Wash foliage and use miticides.', story: 'The silent invasion begins when the air turns dry and stagnant. Unseen to the naked eye, a microscopic web is spun across the apex of a pristine Monstera leaf, while thousands of tiny arachnids drain the mesophyll cell by cell, leaving a dusty, stippled ruin.', scientific: 'They puncture individual plant cells to suck out the contents, destroying the mesophyll layer and reducing photosynthetic capacity.', spotting: 'Look for tiny, dust-like specks crawling on the undersides of leaves. Severe infestations form fine, silk-like webbing across leaf axils. Leaves appear dusty or stippled with tiny yellow dots.', treatment: 'Isolate the plant immediately. Wash foliage thoroughly in the shower to physically remove them. Treat with a targeted miticide or predatory mites (Phytoseiulus persimilis). Neem oil is moderately effective.', similar: 'Dust or normal leaf respiration minerals. Mites will move if prodded.', lifecycle: 'Eggs hatch in 3 days. Full lifecycle takes only 1-2 weeks in warm, dry environments. They reproduce exponentially.' },
+            { id: 'thrips', name: 'Thrips (Thysanoptera)', desc: 'Slender insects that puncture cells. Look for silvery, scratched leaf damage and tiny black dots (frass). Requires systemic treatment.', story: 'Slender and fast, these sap-sucking insects rasp open epidermal cells with asymmetric mouthparts. They leave behind a trail of shimmering, silvery scar tissue and tiny black dots of frass, permanently marring the flawless surface of your rarest Anthurium.', scientific: 'They use asymmetric mouthparts to rasp open epidermal cells and consume the exuding sap. They are major vectors for destructive plant viruses (e.g., INSV).', spotting: 'Silver or bronze scarring on leaves (empty, dead cells). Tiny, elongated black or yellow bugs crawling fast. Small black dots (frass/poop) left behind on the foliage.', treatment: 'Thrips lay eggs inside the plant tissue, protecting them from sprays. Use a systemic insecticide (e.g., Imidacloprid or Spinosad) and predatory mites (Amblyseius swirskii).', similar: 'Mechanical damage or spider mite stippling (thrips cause larger, irregular silver patches).', lifecycle: 'Eggs laid inside tissue. Larvae feed, then drop into the soil to pupate. Adults emerge to fly and infect new plants. Lifecycle takes 2-3 weeks.' },
+            { id: 'mealybugs', name: 'Mealybugs (Pseudococcidae)', desc: 'Sap-sucking insects covered in a white, cottony wax. They cluster in leaf axils, stunting growth. Treat with insecticidal soap or rubbing alcohol.', story: 'What appears to be a harmless speck of white cotton tucked deep in the leaf axils is actually a waxy fortress. Beneath it, sap-sucking insects drain the plant\'s vitality, secreting a sticky honeydew that coats the stems and attracts secondary fungal infections.', scientific: 'They insert a stylet into the phloem to drain sap, secreting a sugary honeydew that attracts ants and promotes sooty mold. Their waxy coating makes them highly resistant to water-based sprays.', spotting: 'Fluffy, white cotton-like masses tucked deep into leaf axils, stems, or under leaves. The plant may look sticky (honeydew) and stunted.', treatment: 'Dab visible bugs with a Q-tip dipped in 70% isopropyl alcohol to dissolve their wax. Follow up with insecticidal soap or a systemic pesticide.', similar: 'Perlite dust, harmless spider webs, or natural plant fuzz (pubescence).', lifecycle: 'Females lay hundreds of eggs in a cottony ovisac. Crawlers (nymphs) spread quickly before settling and producing their waxy armor.' },
+            { id: 'scale', name: 'Scale Insects (Coccoidea)', desc: 'Immobile pests forming hard, brown bump-like shells on stems and veins. They drain sap, causing yellow leaves. Manual removal and oils are required.', story: 'They look like natural scabs or corking on the stems—until they spread. Fused permanently to the plant beneath hard, armored shells, these immobile parasites silently siphon away the plant\'s lifeblood, completely immune to standard topical sprays.', scientific: 'Once settled, they lose their legs and secrete a hard, armored shell over their bodies, permanently fusing themselves to the plant while continuously draining sap.', spotting: 'Hard, oval, brown or tan bumps that look like natural scabs on stems or along the central leaf veins. They do not move when poked. Sticky honeydew may be present.', treatment: 'Adults are immune to most sprays due to their armor. Manually scrape them off with a fingernail or toothbrush. Use horticultural oil to suffocate them.', similar: 'Natural plant nodes, corking, or edema (blisters from irregular watering). Scales can be easily scraped off; plant tissue cannot.', lifecycle: 'Eggs hatch into mobile "crawlers" which seek a feeding spot. Within days, they settle, lose their legs, and build their armor.' },
+            { id: 'fungus_gnats', name: 'Fungus Gnats (Sciaridae)', desc: 'Dark flies hovering over soil. Their soil-dwelling larvae damage delicate root systems. Indicates overwatering. Use BTI (Mosquito Bits) to treat.', story: 'A dark cloud of tiny flies hovers erratically above the damp soil. While the adults are merely a nuisance, their translucent larvae writhe in the wet earth below, hungrily chewing through the delicate root hairs and opening the door to catastrophic root rot.', scientific: 'While adults are a harmless nuisance, the transparent larvae live in the topsoil, feeding on fungi and tender plant roots, opening wounds that invite fungal root rot.', spotting: 'Tiny black flies hovering erratically around the soil surface when the pot is tapped. Silver trails on the soil. Plants may mysteriously wilt despite wet soil (root damage).', treatment: 'Use yellow sticky traps to catch adults. Water with BTI (Bacillus thuringiensis israelensis) to kill larvae. Let the top 2 inches of soil dry out completely between waterings.', similar: 'Fruit flies (which hover near fruit/trash, not soil) or harmless springtails.', lifecycle: 'Adults live 1 week and lay 200 eggs in wet soil. Larvae feed for 2 weeks before pupating.' },
+            { id: 'aphids', name: 'Aphids (Aphidoidea)', desc: 'Soft-bodied insects that cluster around tender new growth. They cause deformed leaves and secrete honeydew. Easily washed off or treated with neem oil.', story: 'They target the youngest, softest growth. A dense cluster of pear-shaped, green bodies swarms the newest node, multiplying exponentially in days. As they gorge on phloem sap, the emerging leaves become twisted and severely deformed.', scientific: 'They feed exclusively on phloem sap. Because sap is low in amino acids but high in sugar, they process massive amounts, excreting the excess sugar as sticky honeydew.', spotting: 'Dense clusters of tiny, pear-shaped, green or black bugs on the newest, softest growth tips and flower buds. Leaves may emerge curled or deformed.', treatment: 'Aphids are soft-bodied and weak. A strong blast of water from a hose or shower easily dislodges and kills most of them. Follow up with neem oil or insecticidal soap.', similar: 'Whiteflies (which fly away when disturbed) or thrips (which are slender, not pear-shaped).', lifecycle: 'Incredibly rapid. Females are born pregnant and give live birth to clones without mating. Populations can explode in days.' },
+            { id: 'broad_mites', name: 'Broad Mites (Tarsonemidae)', desc: 'Microscopic terrors that inject toxic saliva into new growth, causing severe deformity, hardened leaves, and curling. Highly destructive to Anthuriums.', story: 'They are so small they are invisible even under a standard loupe. They do not merely drain the plant; their saliva is highly toxic. As they feed on the apical meristem, the newest leaves emerge thickened, brittle, and violently curled downwards, as if mutated.', scientific: 'Broad mites inject a toxin while feeding that causes severe cellular distortion and hardening (hypertrophy) in developing tissue.', spotting: 'New growth is extremely stunted, brittle, hardened, and curled downwards. Edges may appear scorched. The pests themselves are virtually invisible without a microscope.', treatment: 'Extremely difficult to eradicate. Prune off all affected new growth. Treat repeatedly with translaminar miticides (like Abamectin) or introduce predatory mites (Neoseiulus californicus).', similar: 'Calcium deficiency or severe heat stress.', lifecycle: 'Eggs hatch in 2-3 days, and they reach adulthood in just 5 days, leading to massive unseen population explosions.' },
+            { id: 'root_mealybugs', name: 'Root Mealybugs (Rhizoecus spp.)', desc: 'Subterranean pests that feed on root systems. They stunt plant growth and cause mysterious wilting despite moist soil. Difficult to detect until repotting.', story: 'While you scrutinize the foliage, the true devastation happens below the soil. Hidden in the dark, chalky white masses of subterranean parasites slowly drain the root system, causing the plant to inexplicably wilt and fail while the topsoil remains damp.', scientific: 'They feed exclusively on root sap, disrupting water and nutrient uptake. Their feeding wounds frequently invite fatal secondary fungal infections like Pythium.', spotting: 'Slow decline, yellowing leaves, and wilting despite adequate watering. When unspotted, they look like patches of white ash or powdery mildew clinging to the inside of the pot or the roots themselves.', treatment: 'Isolate immediately. Unpot and wash the entire root system bare. Soak roots in a 120°F water bath for 10 minutes, or use a systemic soil drench insecticide.', similar: 'Perlite, beneficial mycorrhizal fungi, or standard root rot.', lifecycle: 'Adults live entirely underground. Crawlers can spread through drainage holes to neighboring pots via water trays.' }
+        ];
+
+        const diseasesData = [
+            { id: 'root_rot', name: 'Root Rot (Pythium / Phytophthora)', desc: 'A fatal fungal or oomycete infection of the roots caused by anaerobic, waterlogged soil. Roots turn to brown mush.', story: 'Beneath the surface, the soil has gone completely anaerobic. In this oxygen-starved swamp, opportunistic pathogens awaken, turning the healthy, firm white roots into a foul-smelling, necrotic brown mush. The plant, ironically, dies of thirst while sitting in water.', scientific: 'Waterlogged soil displaces oxygen, suffocating roots and allowing anaerobic pathogens to proliferate and consume the dying tissue.', spotting: 'Foliage rapidly yellows and wilts even though the soil is wet. The stem base may turn black and mushy. Unpotting reveals roots that are brown, slimy, easily pull apart, and smell like a swamp.', treatment: 'Unpot immediately. Cut away all mushy, brown roots back to healthy tissue. Soak remaining roots in diluted hydrogen peroxide (3%). Repot in a highly aerated, chunky substrate in a clean pot.', similar: 'Underwatering (both cause wilting, but root rot occurs in wet soil).', mechanism: 'Anaerobic destruction of the root cortex.' },
+            { id: 'bacterial_leaf_spot', name: 'Bacterial Leaf Spot (Xanthomonas / Pseudomonas)', desc: 'Water-soaked spots on leaves that expand rapidly, often surrounded by a bright yellow halo. Thrives in high humidity and wet foliage.', story: 'It starts as a tiny, translucent pinpoint on a perfect leaf. Within days, the bacteria rapidly multiply, collapsing the plant cells into a dark, watery lesion surrounded by a glowing, toxic yellow halo, racing across the foliage like a wildfire.', scientific: 'Bacteria enter through stomata or wounds. They secrete enzymes that degrade cell walls, causing the tissue to collapse into water-soaked lesions.', spotting: 'Small dark spots that look "water-soaked" or greasy when held to the light. These spots rapidly expand and often feature a stark yellow halo. Lesions may eventually dry and fall out.', treatment: 'Isolate immediately and keep foliage bone dry. Prune severely affected leaves using sterilized shears. Treat with copper-based bactericides.', similar: 'Fungal leaf spot (fungal spots usually lack the pronounced yellow halo and have concentric rings).', mechanism: 'Enzymatic cell wall degradation by rapidly dividing bacterial colonies.' },
+            { id: 'fungal_rust', name: 'Fungal Rust (Pucciniales)', desc: 'Appears as powdery, rust-colored or bright orange pustules on the undersides of leaves. Spreads easily via airborne spores.', story: 'The underside of the leaf erupts in microscopic, violently orange pustules. As the fungal fruiting bodies burst, they release millions of powdery, rust-colored spores into the air, seeking to colonize every plant in the humid canopy.', scientific: 'An obligate biotrophic fungus that draws nutrients from living host cells. It erupts through the epidermis to release spores.', spotting: 'Raised, powdery bumps (pustules) on the undersides of leaves, usually orange, rusty brown, or yellow. The top of the leaf above the pustule often turns yellow.', treatment: 'Remove heavily infected leaves. Reduce humidity and increase air circulation. Treat repeatedly with a systemic fungicide containing tebuconazole or myclobutanil.', similar: 'Edema (water blisters) which are hard and crystalline, not powdery.', mechanism: 'Nutrient siphoning via haustoria and epidermal rupture for sporulation.' },
+            { id: 'mosaic_virus', name: 'Dasheen Mosaic Virus (DsMV)', desc: 'An incurable viral infection causing distorted, mottled, and striking "mosaic" patterns of light and dark green on foliage. Highly contagious.', story: 'The plant begins to twist into bizarre, unnatural shapes. A strange, geometric mosaic of light and dark green bleeds across the foliage, permanently reprogramming the plant\'s DNA. There is no cure; it is a silent, viral death sentence.', scientific: 'A potyvirus primarily transmitted by sap-sucking insects (aphids) or contaminated tools. It disrupts chloroplast development, causing the mosaic pattern.', spotting: 'Leaves are violently distorted, crinkled, or asymmetrical. Striking, blocky "mosaic" or feathery patterns of chlorosis appear on the leaves. Growth is severely stunted.', treatment: 'Incurable. The plant must be completely destroyed (thrown in the trash, not composted) to prevent the virus from spreading to the rest of the collection. Sterilize all tools.', similar: 'Nutrient deficiency (iron/magnesium) or severe pest damage. Viral distortion is usually more erratic and geometric.', mechanism: 'Systemic viral hijacking of cellular machinery.' }
+        ];
+
+
+        function showDiagnosticDetail(type, id) {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            const list = type === 'nutrient' ? diagnosticsData : type === 'disease' ? diseasesData : pestData;
+            const index = list.findIndex(d => d.id === id);
+            const data = list[index];
+            const prevId = index > 0 ? list[index - 1].id : null;
+            const nextId = index < list.length - 1 ? list[index + 1].id : null;
+            const imagePrefix = type === 'nutrient' ? 'nutrient' : 
+                                type === 'disease' ? 'disease' : 'pest';
+            const accentColor = type === 'nutrient' ? 'text-sage-400' : 
+                                type === 'disease' ? 'text-purple-400' : 'text-red-400';
+            const accentBg = type === 'nutrient' ? 'bg-sage-400/10 border-sage-400/20' : 
+                             type === 'disease' ? 'bg-purple-500/10 border-purple-500/20' : 'bg-red-500/10 border-red-500/20';
+
+            appContainer.innerHTML = `
+                <div class="fade-in max-w-[1400px] mx-auto">
+                    <button onclick="navigateTo('firstaid')" class="mb-16 md:mb-24 px-6 py-3 rounded-full glass border border-white/20 text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10 hover:text-sage-400 flex items-center gap-3 w-fit transition-all shadow-xl">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="3"/></svg> Back to Diagnostics
+                    </button>
+
+                    <div class="grid grid-cols-1 xl:grid-cols-12 gap-12 lg:gap-16 items-start">
+                        <div class="xl:col-span-5 slide-up sticky top-32">
+                            <div class="bg-white rounded-[2rem] aspect-square flex items-center justify-center shadow-2xl overflow-hidden group">
+                                <img src="./assets/${imagePrefix}_${data.id}.png" onerror="this.onerror=null; this.src='./assets/ui_placeholder.png';" class="w-full h-full object-cover mix-blend-multiply transition-transform duration-700 scale-[1.15] group-hover:scale-125">
+                            </div>
+                        </div>
+                        <div class="xl:col-span-7 slide-up" style="animation-delay: 0.1s;">
+                            <span class="text-[10px] font-black ${accentColor} uppercase tracking-[0.4em] mb-4 block">${type === 'nutrient' ? 'Nutrient Deficiency' : type === 'disease' ? 'Pathogen / Disease' : 'Common Pest'}</span>
+                            <h1 class="dynamic-title font-black uppercase mb-6 md:mb-10">${data.name}</h1>
+                            
+                            <div class="mb-10 md:mb-14 border-l-2 ${type === 'nutrient' ? 'border-sage-400' : type === 'disease' ? 'border-purple-400' : 'border-red-400'} pl-6 md:pl-10">
+                                <p class="dynamic-quote font-medium text-white italic drop-shadow-xl text-lg md:text-xl leading-relaxed">"${data.story}"</p>
+                            </div>
+
+                            <div class="space-y-8 border-t border-white/5 pt-10">
+                                <div>
+                                    <h3 class="text-base md:text-lg font-black uppercase tracking-tighter mb-2 md:mb-3 flex items-center gap-3"><div class="w-2 h-2 rounded-full ${accentColor.replace('text-', 'bg-')}"></div> Scientific Mechanism</h3>
+                                    <p class="dynamic-text text-white/70">${data.scientific}</p>
+                                </div>
+                                
+                                <div>
+                                    <h3 class="text-base md:text-lg font-black uppercase tracking-tighter mb-2 md:mb-3 flex items-center gap-3"><div class="w-2 h-2 rounded-full ${accentColor.replace('text-', 'bg-')}"></div> How to Spot It</h3>
+                                    <p class="dynamic-text text-white/70">${data.spotting}</p>
+                                </div>
+
+                                <div>
+                                    <h3 class="text-base md:text-lg font-black uppercase tracking-tighter mb-2 md:mb-3 flex items-center gap-3"><div class="w-2 h-2 rounded-full ${accentColor.replace('text-', 'bg-')}"></div> Look-Alikes</h3>
+                                    <p class="dynamic-text text-white/70">${data.similar}</p>
+                                </div>
+
+                                <div class="glass ${accentBg} p-6 md:p-8 rounded-[2rem] border">
+                                    <h3 class="text-base md:text-lg font-black uppercase tracking-tighter mb-2 md:mb-3 flex items-center gap-3"><div class="w-2 h-2 rounded-full ${accentColor.replace('text-', 'bg-')}"></div> Eradication & Treatment</h3>
+                                    <p class="dynamic-text text-white/90 font-medium">${data.treatment}</p>
+                                    ${type === 'nutrient' ? `<div class="mt-6 border-t border-white/10 pt-4"><a onclick="navigateTo('cultivation', {hash: 'water-chemistry'})" class="text-[10px] font-black uppercase tracking-widest text-sage-400 hover:text-white cursor-pointer transition-colors flex items-center gap-2 w-fit"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"/></svg> Learn about pH lock-out & CEC</a></div>` : ''}
+                                </div>
+
+                                <div>
+                                    <h3 class="text-base md:text-lg font-black uppercase tracking-tighter mb-2 md:mb-3 flex items-center gap-3"><div class="w-2 h-2 rounded-full ${accentColor.replace('text-', 'bg-')}"></div> ${type === 'nutrient' ? 'Biological Impact' : 'Lifecycle'}</h3>
+                                    <p class="dynamic-text text-white/70">${type === 'nutrient' ? data.mechanism : data.lifecycle}</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-16 flex justify-between items-center border-t border-white/5 pt-8">
+                                ${prevId ? `<button onclick="navigateTo('diagnosticDetail', {type: '${type}', id: '${prevId}'})" class="px-6 py-3 rounded-full glass border border-white/10 text-[9px] font-black uppercase tracking-widest text-white hover:bg-white/10 hover:${accentColor} flex items-center gap-3 transition-all"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" stroke-width="3"/></svg> Previous</button>` : '<div></div>'}
+                                ${nextId ? `<button onclick="navigateTo('diagnosticDetail', {type: '${type}', id: '${nextId}'})" class="px-6 py-3 rounded-full glass border border-white/10 text-[9px] font-black uppercase tracking-widest text-white hover:bg-white/10 hover:${accentColor} flex items-center gap-3 transition-all">Next <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" stroke-width="3"/></svg></button>` : '<div></div>'}
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        function updateVPDGauge() {
+            const temp = parseFloat(document.getElementById('vpd-temp').value);
+            const rh = parseFloat(document.getElementById('vpd-rh').value);
+            const svp = 0.611 * Math.exp((17.502 * temp) / (temp + 240.97));
+            const vpd = svp * (1 - (rh / 100));
+            const vpdStr = vpd.toFixed(2);
+            document.getElementById('vpd-display').innerText = vpdStr;
+            const container = document.getElementById('vpd-gauge-container');
+            const status = document.getElementById('vpd-status');
+            
+            container.classList.remove('border-sage-400', 'border-red-500', 'border-cyan-500', 'border-amber-400');
+            status.classList.remove('text-sage-400', 'text-red-500', 'text-cyan-500', 'text-amber-400');
+
+            if (vpd >= 0.8 && vpd <= 1.2) {
+                container.classList.add('border-sage-400');
+                status.classList.add('text-sage-400');
+                status.innerText = 'Ideal Range';
+            } else if (vpd > 1.2 && vpd <= 1.6) {
+                container.classList.add('border-amber-400');
+                status.classList.add('text-amber-400');
+                status.innerText = 'High Transpiration';
+            } else if (vpd > 1.6) {
+                container.classList.add('border-red-500');
+                status.classList.add('text-red-500');
+                status.innerText = 'High Risk of Leaf Burn';
+            } else {
+                container.classList.add('border-cyan-500');
+                status.classList.add('text-cyan-500');
+                status.innerText = 'Risk of Mold / Stalled Uptake';
+            }
+        }
+
+        function showFirstAid() {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            
+            let html = `
+                <div class="fade-in max-w-[1600px] mx-auto pb-40">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-32 items-center relative mb-32 md:mb-48 mt-12 md:mt-20 slide-up">
+                        <div class="lg:col-span-5 flex flex-col items-start">
+                            <h1 class="huge-header scroll-blur">Heal<br/><span class="text-sage-400">Nature</span></h1>
+                        </div>
+                        <div class="lg:col-span-7 mt-12 lg:mt-0 scroll-blur relative isolate">
+                            <div class="absolute inset-0 bg-forest-950/40 backdrop-blur-md rounded-[2rem] -z-10 shadow-2xl border border-white/5 pointer-events-none"></div>
+                            <div class="p-8 md:p-12">
+                                <p class="dynamic-quote font-normal text-white italic mb-8 md:mb-12 border-l-2 border-sage-400 pl-6 md:pl-10 drop-shadow-xl">"The physician heals, nature makes well. Observation is the ultimate tool of cultivation; the leaf never lies."<br/><span class="text-sm md:text-lg text-sage-400 mt-4 block font-black tracking-wide uppercase drop-shadow-md">— Aristotle</span></p>
+                                <p class="dynamic-text font-medium text-white/90 pl-6 md:pl-10 drop-shadow-xl">Cultivating rare tropicals is an exercise in profound observation. The jungle is a battlefield of silent chemistry, where a plant's vibrant foliage can rapidly succumb to microscopic sap-suckers or subtle mineral lockouts in the soil matrix. True mastery requires understanding the language of the leaf—interpreting yellowing margins or deformed growth as precise symptoms rather than mysterious ailments. Use this diagnostic center to pinpoint deficiencies and deploy targeted, systemic eradication strategies against pests to restore the balance of your enclosed ecosystem.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h2 id="nutrient-deficiencies" class="text-2xl md:text-3xl font-black uppercase tracking-tighter mb-12 border-b border-white/10 pb-6">Nutrient Deficiencies</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-8 slide-up mb-32">
+            `;
+
+            diagnosticsData.forEach(d => {
+                html += `
+                    <div class="glass p-8 rounded-[2rem] group cursor-pointer hover:bg-white/5 transition-all" onclick="navigateTo('diagnosticDetail', {type: 'nutrient', id: '${d.id}'})">
+                        <div class="bg-white rounded-[2rem] h-48 flex items-center justify-center mb-6 overflow-hidden">
+                            <img src="./assets/nutrient_${d.id}.png" onerror="this.onerror=null; this.src='./assets/ui_placeholder.png';" class="w-full h-full object-cover mix-blend-multiply transition-transform duration-500 scale-[1.15] group-hover:scale-125">
+                        </div>
+                        <h3 class="text-lg font-black uppercase tracking-tighter mb-2">${d.name}</h3>
+                        <p class="text-white/40 text-xs font-medium leading-relaxed">${d.desc}</p>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tighter mb-12 border-b border-white/10 pb-6">Common Pests</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-8 slide-up" style="animation-delay: 0.2s;">
+            `;
+
+            pestData.forEach(p => {
+                html += `
+                    <div class="glass p-8 rounded-[2rem] group border border-red-500/20 cursor-pointer hover:bg-red-500/5 transition-all" onclick="navigateTo('diagnosticDetail', {type: 'pest', id: '${p.id}'})">
+                        <div class="bg-white rounded-[2rem] h-48 flex items-center justify-center mb-6 overflow-hidden">
+                            <img src="./assets/pest_${p.id}.png" onerror="this.onerror=null; this.src='./assets/ui_placeholder.png';" class="w-full h-full object-cover mix-blend-multiply transition-transform duration-500 scale-[1.15] group-hover:scale-125">
+                        </div>
+                        <h3 class="text-lg font-black uppercase tracking-tighter text-red-400 mb-2">${p.name}</h3>
+                        <p class="text-white/40 text-xs font-medium leading-relaxed">${p.desc}</p>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tighter mb-12 border-b border-white/10 pb-6 mt-32">Pathogens & Diseases</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-8 slide-up" style="animation-delay: 0.4s;">
+            `;
+
+            diseasesData.forEach(d => {
+                html += `
+                    <div class="glass p-8 rounded-[2rem] group border border-purple-500/20 cursor-pointer hover:bg-purple-500/5 transition-all" onclick="navigateTo('diagnosticDetail', {type: 'disease', id: '${d.id}'})">
+                        <div class="bg-white rounded-[2rem] h-48 flex items-center justify-center mb-6 overflow-hidden">
+                            <img src="./assets/disease_${d.id}.png" onerror="this.onerror=null; this.src='./assets/ui_placeholder.png';" class="w-full h-full object-cover mix-blend-multiply transition-transform duration-500 scale-[1.15] group-hover:scale-125">
+                        </div>
+                        <h3 class="text-lg font-black uppercase tracking-tighter text-purple-400 mb-2">${d.name}</h3>
+                        <p class="text-white/40 text-xs font-medium leading-relaxed">${d.desc}</p>
+                    </div>
+                `;
+            });
+
+            html += `</div></div>`;
+            appContainer.innerHTML = html;
+        }
+
+        function showPropagation() {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            appContainer.innerHTML = `
+                <div class="fade-in max-w-[1600px] mx-auto pb-40">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-32 items-center relative mb-32 md:mb-48 mt-12 md:mt-20 slide-up">
+                        <div class="lg:col-span-5 flex flex-col items-start">
+                            <h1 class="huge-header scroll-blur">Multiply<br/><span class="text-sage-400">Life</span></h1>
+                        </div>
+                        <div class="lg:col-span-7 mt-12 lg:mt-0 scroll-blur relative isolate">
+                            <div class="absolute inset-0 bg-forest-950/40 backdrop-blur-md rounded-[2rem] -z-10 shadow-2xl border border-white/5 pointer-events-none"></div>
+                            <div class="p-8 md:p-12">
+                                <p class="dynamic-quote font-normal text-white italic mb-8 md:mb-12 border-l-2 border-sage-400 pl-6 md:pl-10 drop-shadow-xl">"A seed hides a forest; a single node holds a jungle. To cut a plant is not to destroy it, but to multiply its legacy."<br/><span class="text-sm md:text-lg text-sage-400 mt-4 block font-black tracking-wide uppercase drop-shadow-md">— Botanical Proverb</span></p>
+                                <p class="dynamic-text font-medium text-white/90 pl-6 md:pl-10 drop-shadow-xl">There is an inherent magic in creating life from a single, severed node. In the wild, heavy tropical storms frequently shatter fragile epiphytic vines, snapping stems and casting them to the forest floor. Yet, this violence is merely an invitation for propagation. From a single dormant axillary bud, surrounded by damp sphagnum moss and warmth, a completely independent root system will violently burst forth. Mastering propagation is the ultimate expression of botanical stewardship—multiplying your rare specimens, ensuring genetic preservation, and watching a miniature jungle rise from fragments.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h2 class="text-3xl md:text-4xl font-black uppercase tracking-tighter mb-12 border-b border-white/10 pb-6 slide-up">Asexual Reproduction Methods</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 slide-up" style="animation-delay: 0.1s;">
+                        <!-- Node Cuttings -->
+                        <div class="glass p-10 md:p-16 rounded-[2rem] group hover:bg-white/5 transition-all duration-500">
+                            <span class="text-[10px] font-black text-sage-400 uppercase tracking-widest block mb-4">Technique 01</span>
+                            <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tighter mb-6">Stem & Node Cuttings</h2>
+                            <p class="text-white/60 text-sm leading-relaxed mb-8">The most reliable method for climbing and vining aroids such as Monstera, Philodendron, Epipremnum, and Scindapsus. A cutting must contain at least one node to successfully produce both a new root system and apical foliage.</p>
+                            
+                            <div class="space-y-6">
+                                <div class="bg-white/5 p-6 rounded-[2rem] border border-white/5 group-hover:border-sage-400/30 transition-colors">
+                                    <h4 class="font-bold text-lg mb-2 text-sage-400">1. Identify the Target Node</h4>
+                                    <p class="text-white/60 text-sm leading-relaxed">Carefully locate the swollen section on the stem where the petiole (leaf stalk) attaches. You will often see aerial roots protruding from this exact point, as well as a small, dormant axillary bud (which looks like a tiny pale green bump). This bud contains all the genetic information needed to sprout a new vine.</p>
+                                </div>
+                                <div class="bg-white/5 p-6 rounded-[2rem] border border-white/5 group-hover:border-sage-400/30 transition-colors">
+                                    <h4 class="font-bold text-lg mb-2 text-sage-400">2. The Surgical Cut</h4>
+                                    <p class="text-white/60 text-sm leading-relaxed">Using shears sterilized with 70% isopropyl alcohol, cut cleanly through the internode (the space between two nodes). Make the cut about 1-2 inches below your target node. If you cut too close to the node, the inevitable tissue die-back (stem rot) might destroy the dormant bud before it can activate.</p>
+                                </div>
+                                <div class="bg-white/5 p-6 rounded-[2rem] border border-white/5 group-hover:border-sage-400/30 transition-colors">
+                                    <h4 class="font-bold text-lg mb-2 text-sage-400">3. Callous & Incubation</h4>
+                                    <p class="text-white/60 text-sm leading-relaxed">Do not immediately place a fresh cut into water or wet moss! Allow the severed ends to dry in the open air for 2-4 hours until a hard, protective callous forms. Once calloused, place the node in your chosen rooting medium, ensuring only the aerial root/node is submerged while the dormant bud faces upwards. Provide high humidity (80%+) and bright, indirect light to stimulate rapid cellular division.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rhizome Division -->
+                        <div class="glass p-10 md:p-16 rounded-[2rem] group hover:bg-white/5 transition-all duration-500">
+                            <span class="text-[10px] font-black text-sage-400 uppercase tracking-widest block mb-4">Technique 02</span>
+                            <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tighter mb-6">Rhizome & Corm Division</h2>
+                            <p class="text-white/60 text-sm leading-relaxed mb-8">Essential for terrestrial or clumping aroids that do not climb, such as Alocasia, Calathea, Anthurium, and Zamioculcas. This method involves splitting the central root mass or harvesting underground corms to create entirely independent plants.</p>
+                            
+                            <div class="space-y-6">
+                                <div class="bg-white/5 p-6 rounded-[2rem] border border-white/5 group-hover:border-sage-400/30 transition-colors">
+                                    <h4 class="font-bold text-lg mb-2 text-sage-400">1. Unpot & Expose</h4>
+                                    <p class="text-white/60 text-sm leading-relaxed">Gently unpot the mother plant. Rather than ripping the roots, soak the rootball in a bucket of room-temperature water to dissolve the old substrate. Once the structure is exposed, identify the thick central rhizomes or the small, bulb-like corms attached to the root system by fragile umbilical cords.</p>
+                                </div>
+                                <div class="bg-white/5 p-6 rounded-[2rem] border border-white/5 group-hover:border-sage-400/30 transition-colors">
+                                    <h4 class="font-bold text-lg mb-2 text-sage-400">2. Separation & Harvesting</h4>
+                                    <p class="text-white/60 text-sm leading-relaxed">Look for natural separation points where "pups" (baby plants) have formed their own distinct root systems and growth points. Gently untangle their roots from the mother plant. If harvesting Alocasia corms, carefully snap them off the roots. Ensure corms are firm and healthy; soft, squishy corms are dead and should be discarded.</p>
+                                </div>
+                                <div class="bg-white/5 p-6 rounded-[2rem] border border-white/5 group-hover:border-sage-400/30 transition-colors">
+                                    <h4 class="font-bold text-lg mb-2 text-sage-400">3. Sprouting Corms</h4>
+                                    <p class="text-white/60 text-sm leading-relaxed">To sprout a bare corm, peel the hard, dark outer layer off the top half to expose the pale green tissue underneath. Place it in a shallow puddle of water or wet perlite inside a sealed, transparent container (a propagation box). Place it on a heat mat under strong grow lights. Expect the first leaf to emerge in 3 to 6 weeks.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2 id="micropropagation" class="text-3xl md:text-4xl font-black uppercase tracking-tighter mt-32 mb-12 border-b border-white/10 pb-6 slide-up">Laboratory Micropropagation</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 slide-up" style="animation-delay: 0.1s;">
+                        <div class="lg:col-span-5 flex flex-col items-start">
+                            <div class="glass p-10 md:p-12 rounded-[2rem] w-full border border-purple-500/20 group hover:bg-white/5 transition-all h-full flex flex-col justify-center">
+                                <h3 class="text-2xl font-black uppercase tracking-tighter mb-4 text-purple-400">Tissue Culture (TC)</h3>
+                                <p class="text-white/60 text-sm leading-relaxed mb-6">Micropropagation is the true cutting edge of botanical preservation. By utilizing Murashige and Skoog (MS) media—a highly calibrated gel containing exact macro and micronutrients alongside plant hormones (Auxins and Cytokinins)—we can generate hundreds of exact clones from a single microscopic slice of meristematic tissue.</p>
+                                <p class="text-white/60 text-sm leading-relaxed">This process must be performed in absolute sterility, typically under a laminar flow hood, as the sugar-rich media will aggressively cultivate any rogue fungal or bacterial spores.</p>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-7">
+                            <div class="space-y-6">
+                                <div class="glass p-8 rounded-[2rem] flex items-start gap-6 group hover:-translate-y-1 transition-all duration-300">
+                                    <div class="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0 border border-purple-500/30 group-hover:scale-110 transition-transform"><span class="font-black text-purple-400">I</span></div>
+                                    <div>
+                                        <h4 class="font-bold text-lg mb-2">Stage I: Initiation</h4>
+                                        <p class="text-white/60 text-sm leading-relaxed">An explant (a tiny piece of tissue containing a meristem, often a shoot tip or axillary bud) is excised, subjected to intense surface sterilization protocols (using bleach or sodium dichloroisocyanurate), and placed onto solid MS media.</p>
+                                    </div>
+                                </div>
+                                <div class="glass p-8 rounded-[2rem] flex items-start gap-6 group hover:-translate-y-1 transition-all duration-300">
+                                    <div class="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0 border border-purple-500/30 group-hover:scale-110 transition-transform"><span class="font-black text-purple-400">II</span></div>
+                                    <div>
+                                        <h4 class="font-bold text-lg mb-2">Stage II: Multiplication</h4>
+                                        <p class="text-white/60 text-sm leading-relaxed">The media is spiked with a high ratio of Cytokinins (like BAP) to Auxins. This completely suppresses apical dominance, forcing the explant to erupt into a massive cluster of dozens of tiny, cloned shoots.</p>
+                                    </div>
+                                </div>
+                                <div class="glass p-8 rounded-[2rem] flex items-start gap-6 group hover:-translate-y-1 transition-all duration-300">
+                                    <div class="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0 border border-purple-500/30 group-hover:scale-110 transition-transform"><span class="font-black text-purple-400">III</span></div>
+                                    <div>
+                                        <h4 class="font-bold text-lg mb-2">Stage III: Rooting</h4>
+                                        <p class="text-white/60 text-sm leading-relaxed">The micro-shoots are separated and transferred to new media where the hormone ratio is flipped—high Auxin (like IBA or NAA) and low Cytokinin. This signals the stems to push out vigorous root systems.</p>
+                                    </div>
+                                </div>
+                                <div class="glass p-8 rounded-[2rem] flex items-start gap-6 group hover:-translate-y-1 transition-all duration-300">
+                                    <div class="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0 border border-purple-500/30 group-hover:scale-110 transition-transform"><span class="font-black text-purple-400">IV</span></div>
+                                    <div>
+                                        <h4 class="font-bold text-lg mb-2">Stage IV: Acclimatization</h4>
+                                        <p class="text-white/60 text-sm leading-relaxed">The most perilous stage. The sterile, pampered clones (which lack a waxy cuticle and functional stomata) are removed from the flask, washed of agar, and slowly hardened off in 100% humidity propagation boxes before facing ambient air.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2 class="text-3xl md:text-4xl font-black uppercase tracking-tighter mt-32 mb-12 border-b border-white/10 pb-6 slide-up">Rooting Media Guide</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 slide-up" style="animation-delay: 0.2s;">
+                        <div class="glass p-10 rounded-[2rem] hover:-translate-y-2 transition-transform duration-500 border border-transparent hover:border-cyan-500/30">
+                            <h3 class="text-xl font-black uppercase tracking-tighter text-cyan-400 mb-4">Pure Water</h3>
+                            <p class="text-white/70 text-sm leading-relaxed mb-6">The most visually satisfying and beginner-friendly method. Simply place the node in a glass of clean water.</p>
+                            <ul class="text-sm text-white/50 space-y-2">
+                                <li class="flex gap-3 items-start"><div class="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0"></div> Allows constant monitoring for root rot.</li>
+                                <li class="flex gap-3 items-start"><div class="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0"></div> Water roots are structurally different and highly brittle; transitioning them to soil later can cause severe shock.</li>
+                                <li class="flex gap-3 items-start"><div class="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0"></div> Change water weekly to replenish dissolved oxygen.</li>
+                            </ul>
+                        </div>
+                        <div class="glass p-10 rounded-[2rem] hover:-translate-y-2 transition-transform duration-500 border border-transparent hover:border-emerald-500/30">
+                            <h3 class="text-xl font-black uppercase tracking-tighter text-emerald-400 mb-4">Sphagnum Moss</h3>
+                            <p class="text-white/70 text-sm leading-relaxed mb-6">The gold standard for aroid collectors. Moss provides the perfect balance of moisture retention and oxygen flow.</p>
+                            <ul class="text-sm text-white/50 space-y-2">
+                                <li class="flex gap-3 items-start"><div class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0"></div> Roots grown in moss are robust and transition easily to soil.</li>
+                                <li class="flex gap-3 items-start"><div class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0"></div> Must be kept damp, never soaking wet. Squeeze out all excess water before use.</li>
+                                <li class="flex gap-3 items-start"><div class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0"></div> Can be difficult to untangle from fragile roots during potting.</li>
+                            </ul>
+                        </div>
+                        <div class="glass p-10 rounded-[2rem] hover:-translate-y-2 transition-transform duration-500 border border-transparent hover:border-amber-500/30">
+                            <h3 class="text-xl font-black uppercase tracking-tighter text-amber-400 mb-4">Perlite / Mineral</h3>
+                            <p class="text-white/70 text-sm leading-relaxed mb-6">Using chunky perlite, pumice, or Fluval Stratum in a semi-hydro setup with a small water reservoir at the bottom.</p>
+                            <ul class="text-sm text-white/50 space-y-2">
+                                <li class="flex gap-3 items-start"><div class="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0"></div> Practically eliminates the risk of stem rot due to supreme aeration.</li>
+                                <li class="flex gap-3 items-start"><div class="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0"></div> Roots grown in perlite are extremely thick and fibrous.</li>
+                                <li class="flex gap-3 items-start"><div class="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0"></div> Minerals contain zero nutrients; you must add highly diluted hydroponic fertilizer to the reservoir.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    </div>
+                </div>
+            `;
+        }
+
+        function generatePHChart(type) {
+            const data = type === 'soil' ? [
+                { n: 'Nitrogen (N)', values: [0.3, 0.4, 0.7, 0.9, 1.0, 1.0, 1.0, 1.0, 1.0] }, 
+                { n: 'Phosphorus (P)', values: [0.2, 0.3, 0.4, 0.6, 0.8, 1.0, 1.0, 0.9, 0.8] },
+                { n: 'Potassium (K)', values: [0.3, 0.4, 0.6, 0.8, 0.9, 1.0, 1.0, 1.0, 1.0] },
+                { n: 'Calcium (Ca)', values: [0.1, 0.2, 0.4, 0.6, 0.8, 1.0, 1.0, 1.0, 1.0] },
+                { n: 'Magnesium (Mg)', values: [0.1, 0.2, 0.3, 0.5, 0.8, 1.0, 1.0, 1.0, 1.0] },
+                { n: 'Iron (Fe)', values: [1.0, 1.0, 1.0, 1.0, 1.0, 0.6, 0.3, 0.2, 0.1] },
+                { n: 'Zinc / Copper', values: [0.5, 0.6, 0.8, 1.0, 1.0, 1.0, 0.6, 0.3, 0.2] },
+                { n: 'Manganese (Mn)', values: [1.0, 1.0, 1.0, 1.0, 1.0, 0.7, 0.4, 0.2, 0.1] },
+                { n: 'Boron (B)', values: [0.4, 0.5, 0.7, 1.0, 1.0, 1.0, 0.8, 0.5, 0.4] },
+                { n: 'Molybdenum (Mo)', values: [0.1, 0.1, 0.2, 0.4, 0.6, 0.8, 1.0, 1.0, 1.0] }
+            ] : [
+                { n: 'Nitrogen (N)', values: [0.7, 0.8, 0.9, 1.0, 1.0, 1.0, 0.8, 0.6, 0.4] }, 
+                { n: 'Phosphorus (P)', values: [0.5, 0.6, 0.8, 1.0, 1.0, 0.9, 0.6, 0.4, 0.2] },
+                { n: 'Potassium (K)', values: [0.6, 0.7, 0.8, 1.0, 1.0, 1.0, 0.8, 0.6, 0.4] },
+                { n: 'Calcium (Ca)', values: [0.4, 0.5, 0.7, 1.0, 1.0, 0.8, 0.6, 0.4, 0.2] },
+                { n: 'Magnesium (Mg)', values: [0.3, 0.4, 0.6, 1.0, 1.0, 0.8, 0.5, 0.3, 0.2] },
+                { n: 'Iron (Fe)', values: [1.0, 1.0, 1.0, 1.0, 0.8, 0.4, 0.2, 0.1, 0.1] },
+                { n: 'Zinc / Copper', values: [0.8, 0.9, 1.0, 1.0, 0.6, 0.3, 0.1, 0.1, 0.1] },
+                { n: 'Manganese (Mn)', values: [1.0, 1.0, 1.0, 1.0, 0.6, 0.3, 0.1, 0.1, 0.1] },
+                { n: 'Boron (B)', values: [0.7, 0.8, 1.0, 1.0, 0.6, 0.4, 0.2, 0.1, 0.1] },
+                { n: 'Molybdenum (Mo)', values: [0.2, 0.3, 0.5, 0.7, 0.9, 1.0, 1.0, 1.0, 1.0] }
+            ];
+
+            let svg = '<svg viewBox="0 0 800 ' + (data.length * 36 + 40) + '" class="w-full h-auto text-white mt-4">';
+            
+            for(let i=0; i<9; i++) {
+                let x = 160 + i * 78;
+                let ph = (4.0 + i * 0.5).toFixed(1);
+                svg += '<line x1="'+x+'" y1="0" x2="'+x+'" y2="'+(data.length * 36)+'" stroke="rgba(255,255,255,0.05)" stroke-width="2"/>';
+                svg += '<text x="'+x+'" y="'+(data.length * 36 + 25)+'" fill="rgba(255,255,255,0.4)" font-size="12" font-weight="bold" text-anchor="middle">'+ph+'</text>';
+            }
+
+            let optX = type === 'soil' ? (160 + 4 * 78) : (160 + 3 * 78);
+            let optW = 78;
+            let highlightColor = type === 'soil' ? 'rgba(167, 243, 208, 0.15)' : 'rgba(34, 211, 238, 0.15)';
+            let strokeColor = type === 'soil' ? 'rgba(167, 243, 208, 0.5)' : 'rgba(34, 211, 238, 0.5)';
+            svg += '<rect x="'+optX+'" y="0" width="'+optW+'" height="'+(data.length * 36)+'" fill="'+highlightColor+'" stroke="'+strokeColor+'" stroke-width="2" stroke-dasharray="4,4" />';
+            
+            data.forEach((item, index) => {
+                let yCenter = index * 36 + 18;
+                svg += '<text x="0" y="'+(yCenter+4)+'" fill="rgba(255,255,255,0.8)" font-size="12" font-weight="bold">'+item.n+'</text>';
+                
+                let pathData = "M 160 " + yCenter;
+                for(let i=0; i<9; i++) {
+                    let x = 160 + i * 78;
+                    let width = item.values[i] * 12;
+                    pathData += " L " + x + " " + (yCenter - width);
+                }
+                for(let i=8; i>=0; i--) {
+                    let x = 160 + i * 78;
+                    let width = item.values[i] * 12;
+                    pathData += " L " + x + " " + (yCenter + width);
+                }
+                pathData += " Z";
+                let color = type === 'soil' ? 'rgba(167, 243, 208, ' : 'rgba(34, 211, 238, ';
+                svg += '<path d="'+pathData+'" fill="'+color+'0.7)" />';
+            });
+
+            svg += '</svg>';
+            return svg;
+        }
+
+        function showCultivation() {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            appContainer.innerHTML = `
+                <div class="fade-in max-w-[1600px] mx-auto pb-40">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-32 items-center relative mb-32 md:mb-48 mt-12 md:mt-20 slide-up">
+                        <div class="lg:col-span-5 flex flex-col items-start">
+                            <h1 class="huge-header scroll-blur">Grow<br/><span class="text-sage-400">Knowledge</span></h1>
+                        </div>
+                        <div class="lg:col-span-7 mt-12 lg:mt-0 scroll-blur relative isolate">
+                            <div class="absolute inset-0 bg-forest-950/40 backdrop-blur-md rounded-[2rem] -z-10 shadow-2xl border border-white/5 pointer-events-none"></div>
+                            <div class="p-8 md:p-12">
+                                <p class="dynamic-quote font-normal text-white italic mb-8 md:mb-12 border-l-2 border-sage-400 pl-6 md:pl-10 drop-shadow-xl">"The soil is the great connector of lives, the source and destination of all."<br/><span class="text-sm md:text-lg text-sage-400 mt-4 block font-black tracking-wide uppercase drop-shadow-md">— Wendell Berry</span></p>
+                                <p class="dynamic-text font-medium text-white/90 pl-6 md:pl-10 drop-shadow-xl mb-4">To truly master tropical botany indoors, you must become an engineer of microclimates. Growing rare aroids is less about the plant itself and entirely about replicating the intense environmental parameters of the equatorial understory.</p>
+                                <p class="dynamic-text font-medium text-white/90 pl-6 md:pl-10 drop-shadow-xl">This requires a fundamental understanding of soil chemistry, the physics of water retention, and the precise quantification of light. From hacking IKEA Milsbo cabinets into fully automated smart-greenhouses with 3D printed airflow solutions, to balancing your Cation Exchange Capacity (CEC) in a custom substrate mix—welcome to the science of cultivation.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VPD Calculator -->
+                    <div class="glass p-8 md:p-12 rounded-[2rem] mb-32 slide-up border border-white/10 relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>
+                        <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                            <div>
+                                <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tighter mb-4 flex items-center gap-3"><svg class="w-6 h-6 text-sage-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" stroke-width="2"/></svg> VPD Calculator</h2>
+                                <p class="text-white/60 text-sm leading-relaxed mb-8">Vapor Pressure Deficit (VPD) measures the drying power of the air. It dictates how well a plant can transpire and uptake nutrients. A target VPD of <strong>0.8 - 1.2 kPa</strong> is ideal for most tropicals. High VPD (>1.6) causes leaf burn; Low VPD (<0.4) stalls nutrient transport and invites mold.</p>
+                                
+                                <div class="space-y-6">
+                                    <div>
+                                        <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2"><span class="text-white/60">Temperature (°C)</span><span id="temp-val" class="text-white">25°C</span></div>
+                                        <input type="range" id="vpd-temp" min="15" max="35" value="25" step="0.5" class="w-full h-2 bg-white/10 rounded-full appearance-none cursor-pointer" oninput="document.getElementById('temp-val').innerText = this.value + '°C'; updateVPDGauge();">
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2"><span class="text-white/60">Relative Humidity (%)</span><span id="rh-val" class="text-white">60%</span></div>
+                                        <input type="range" id="vpd-rh" min="30" max="99" value="60" step="1" class="w-full h-2 bg-white/10 rounded-full appearance-none cursor-pointer" oninput="document.getElementById('rh-val').innerText = this.value + '%'; updateVPDGauge();">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-center justify-center bg-forest-950/40 rounded-[2rem] p-8 border border-white/5 relative shadow-inner">
+                                <div id="vpd-gauge-container" class="w-48 h-48 rounded-full border-4 flex items-center justify-center transition-colors duration-500 bg-white/5 relative">
+                                    <div class="text-center">
+                                        <span id="vpd-display" class="text-4xl font-black block transition-colors duration-500 text-white">1.26</span>
+                                        <span class="text-[10px] font-black uppercase tracking-widest text-white/50 block mt-1">kPa</span>
+                                    </div>
+                                </div>
+                                <p id="vpd-status" class="mt-6 text-sm font-bold tracking-wider uppercase text-center transition-colors duration-500">Normal Range</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h2 id="substrate-science" class="text-3xl md:text-4xl font-black uppercase tracking-tighter mb-12 border-b border-white/10 pb-6 slide-up">Substrate & Watering Science</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 slide-up mb-32" style="animation-delay: 0.1s;">
+                        <div class="glass p-10 md:p-16 rounded-[2rem] group hover:bg-white/5 transition-all duration-500">
+                            <span class="text-[10px] font-black text-sage-400 uppercase tracking-widest block mb-4">Chemistry</span>
+                            <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tighter mb-6">Aroid Mix & CEC</h2>
+                            <p class="text-white/60 text-sm leading-relaxed mb-8">Tropical epiphytes do not grow in dense dirt; they climb trees and root into loose leaf litter. A proper "Aroid Mix" (1/3 Orchid Bark, 1/3 Perlite/Pumice, 1/3 Premium Potting Soil/Coco Coir) mimics this. The high ratio of inorganic material creates massive macropores for oxygen.</p>
+                            <p class="text-white/60 text-sm leading-relaxed">Furthermore, adding horticultural charcoal or zeolite increases the <strong>Cation Exchange Capacity (CEC)</strong>. This measures the soil's ability to hold onto positively charged nutrient ions (like Calcium and Magnesium) and slowly release them to the roots, preventing fertilizer burn while maintaining a stable pH around 6.0.</p>
+                        </div>
+                        
+                        <div class="glass p-10 md:p-16 rounded-[2rem] group hover:bg-white/5 transition-all duration-500">
+                            <span class="text-[10px] font-black text-sage-400 uppercase tracking-widest block mb-4">Physics</span>
+                            <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tighter mb-6">The Perched Water Table</h2>
+                            <p class="text-white/60 text-sm leading-relaxed mb-8">A common myth is to put rocks at the bottom of a pot for "drainage". This actually destroys drainage. Water in soil is governed by gravity pulling down and capillary action pulling up. At the bottom of any substrate layer, these forces cancel out, creating a 100% saturated layer called the Perched Water Table (PWT).</p>
+                            <p class="text-white/60 text-sm leading-relaxed">Adding rocks simply moves this saturated, suffocating layer *higher* up into the pot, closer to your plant's fragile roots. This causes instant hypoxia (oxygen starvation) and root rot. Always use a uniform, chunky substrate top-to-bottom with massive drainage holes.</p>
+                        </div>
+                    </div>
+
+                    <h3 class="text-2xl md:text-3xl font-black uppercase tracking-tighter mb-8 slide-up border-b border-white/10 pb-4">Standard Substrate Recipes</h3>
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-12 slide-up mb-32" style="animation-delay: 0.2s;">
+                        <!-- Organic Soil Recipe -->
+                        <div class="glass p-8 md:p-12 rounded-[2rem] border border-sage-500/20 relative overflow-hidden group hover:-translate-y-1 transition-all duration-500 shadow-xl flex flex-col">
+                            <div class="absolute inset-0 bg-gradient-to-br from-sage-500/5 to-transparent pointer-events-none"></div>
+                            <h4 class="text-2xl font-black text-sage-400 uppercase tracking-widest mb-3">${genusDefaults['Philodendron'].substrate.organic.name}</h4>
+                            <p class="text-white/60 text-sm leading-relaxed mb-8">Ideal for maintaining moisture while providing maximum aeration and organic nutrient buffering. Perfect for standard aroids transitioning from nursery soil.</p>
+                            
+                            <div class="w-full h-4 rounded-full flex overflow-hidden mb-8 border border-white/10 shadow-inner bg-black/20">
+                                ${genusDefaults['Philodendron'].substrate.organic.mix.map((m, i) => {
+                                    const colors = ['bg-[#819067]', 'bg-[#6b7a54]', 'bg-[#4a5538]', 'bg-[#2d3a2f]', 'bg-[#1a241c]'];
+                                    return `<div style="width: ${m.p}%" class="${colors[i % colors.length]} h-full animate-bar transition-all duration-500 hover:brightness-125 cursor-help" title="${m.n}"></div>`;
+                                }).join('')}
+                            </div>
+                            
+                            <ul class="text-sm font-bold tracking-wider uppercase text-white/70 space-y-4 mb-8">
+                                ${genusDefaults['Philodendron'].substrate.organic.mix.map((m, i) => {
+                                    const colors = ['bg-[#819067]', 'bg-[#6b7a54]', 'bg-[#4a5538]', 'bg-[#2d3a2f]', 'bg-[#1a241c]'];
+                                    const bgCol = colors[i % colors.length];
+                                    return `<li class="flex items-center gap-4 group-hover:translate-x-1 transition-transform duration-300 cursor-default"><div class="w-3 h-3 rounded-full ${bgCol} shadow-lg shadow-[${bgCol}]/20"></div>${m.p}% ${m.n}</li>`;
+                                }).join('')}
+                            </ul>
+
+                            <div class="mt-auto space-y-4 pt-8 border-t border-white/10">
+                                <h5 class="font-black uppercase tracking-widest text-xs text-sage-400 mb-4">Component Science</h5>
+                                <div class="text-xs text-white/70 leading-relaxed space-y-3">
+                                    <p><strong class="text-white">Coco Coir / Peat (30%):</strong> Acts as the primary water reservoir. Coco coir is slightly acidic and highly fibrous, allowing fine capillary roots to anchor deeply without immediate suffocation.</p>
+                                    <p><strong class="text-white">Pine Bark (40%):</strong> The structural backbone. Chunky bark creates massive macropores for instant oxygen exchange. As it slowly decomposes, it releases trace organic acids that tropicals love.</p>
+                                    <p><strong class="text-white">Perlite / Pumice (20%):</strong> Inert, highly porous volcanic glass/rock. It prevents the coir from compacting over time, ensuring the mixture remains fluffy and drains rapidly.</p>
+                                    <p><strong class="text-white">Charcoal (10%):</strong> "Sweetens" the soil by adsorbing toxins, heavy metals, and excess salts. Its microscopic honey-comb structure provides extreme surface area for beneficial microbial colonization.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Mineral Recipe -->
+                        <div class="glass p-8 md:p-12 rounded-[2rem] border border-cyan-500/20 relative overflow-hidden group hover:-translate-y-1 transition-all duration-500 shadow-xl flex flex-col">
+                            <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent pointer-events-none"></div>
+                            <h4 class="text-2xl font-black text-cyan-400 uppercase tracking-widest mb-3">${genusDefaults['Philodendron'].substrate.mineral.name}</h4>
+                            <p class="text-white/60 text-sm leading-relaxed mb-8">An advanced, totally inert matrix for semi-hydroponics. Requires synthetic liquid fertilizers and strict pH balancing, but virtually eliminates root rot.</p>
+                            
+                            <div class="w-full h-4 rounded-full flex overflow-hidden mb-8 border border-white/10 shadow-inner bg-black/20">
+                                ${genusDefaults['Philodendron'].substrate.mineral.mix.map((m, i) => {
+                                    const colors = ['bg-[#B1AB86]', 'bg-[#8A8568]', 'bg-[#63604B]', 'bg-[#424032]', 'bg-[#212019]'];
+                                    return `<div style="width: ${m.p}%" class="${colors[i % colors.length]} h-full animate-bar transition-all duration-500 hover:brightness-125 cursor-help" title="${m.n}"></div>`;
+                                }).join('')}
+                            </div>
+                            
+                            <ul class="text-sm font-bold tracking-wider uppercase text-white/70 space-y-4 mb-8">
+                                ${genusDefaults['Philodendron'].substrate.mineral.mix.map((m, i) => {
+                                    const colors = ['bg-[#B1AB86]', 'bg-[#8A8568]', 'bg-[#63604B]', 'bg-[#424032]', 'bg-[#212019]'];
+                                    const bgCol = colors[i % colors.length];
+                                    return `<li class="flex items-center gap-4 group-hover:translate-x-1 transition-transform duration-300 cursor-default"><div class="w-3 h-3 rounded-full ${bgCol} shadow-lg shadow-[${bgCol}]/20"></div>${m.p}% ${m.n}</li>`;
+                                }).join('')}
+                            </ul>
+
+                            <div class="mt-auto space-y-4 pt-8 border-t border-white/10">
+                                <h5 class="font-black uppercase tracking-widest text-xs text-cyan-400 mb-4">Component Science</h5>
+                                <div class="text-xs text-white/70 leading-relaxed space-y-3">
+                                    <p><strong class="text-white">Pumice (40%):</strong> The lightweight core. Its massive internal network of closed and open pores holds water internally while keeping the exterior dry, preventing fungal growth.</p>
+                                    <p><strong class="text-white">Lava Rock (25%):</strong> Heavy, dense, and angular. It provides critical weight to anchor top-heavy aroids and creates large, jagged air spaces that roots love to grip.</p>
+                                    <p><strong class="text-white">Zeolite (25%):</strong> The chemical powerhouse. An aluminosilicate mineral with an exceptionally high Cation Exchange Capacity (CEC). It actively traps ammonium and potassium ions, buffering the nutrient solution and preventing fertilizer burn.</p>
+                                    <p><strong class="text-white">Calcined Clay (10%):</strong> High-fired clay (like Akadama) that absorbs incredible amounts of water while maintaining physical integrity. Slowly releases moisture as the surrounding matrix dries.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2 id="lighting" class="text-3xl md:text-4xl font-black uppercase tracking-tighter mt-32 mb-12 border-b border-white/10 pb-6 slide-up">Artificial Lighting & Spectra</h2>
+
+                    <div class="glass p-10 md:p-16 rounded-[2rem] slide-up mb-16" style="animation-delay: 0.2s;">
+                        <h3 class="text-2xl font-black uppercase tracking-tighter mb-4 text-center">Photosynthetically Active Radiation (PAR)</h3>
+                        <p class="text-white/60 text-sm text-center mb-12 max-w-2xl mx-auto">Plants do not perceive light like humans. While human eyes are most sensitive to green/yellow light (measured in Lux/Lumens), plants rely on specific wavelengths between 400nm and 700nm to drive photosynthesis. Hover over the spectrum below to see how each wavelength affects morphology.</p>
+                        
+                        <!-- Interactive Spectrum Bar -->
+                        <div class="relative w-full h-32 rounded-[2rem] overflow-hidden flex cursor-crosshair group/spectrum border border-white/20 shadow-2xl">
+                            <!-- UV (380-400) -->
+                            <div class="h-full flex-grow-[0.5] relative group/band transition-all duration-300 hover:flex-grow-[1.5]" style="background: linear-gradient(to right, #1e1b4b, #4c1d95);">
+                                <div class="absolute inset-0 opacity-0 group-hover/band:opacity-100 bg-white/10 transition-opacity flex flex-col items-center justify-center p-2 text-center backdrop-blur-sm">
+                                    <span class="font-black text-white text-[10px] md:text-xs uppercase tracking-widest mb-1">UV-A & UV-B</span>
+                                    <span class="text-white/80 text-[9px] md:text-[10px] hidden md:block">Stimulates defense mechanisms, thicker leaves, resin production.</span>
+                                </div>
+                            </div>
+                            <!-- Blue (400-500) -->
+                            <div class="h-full flex-grow-[2] relative group/band transition-all duration-300 hover:flex-grow-[3]" style="background: linear-gradient(to right, #4c1d95, #3b82f6);">
+                                <div class="absolute inset-0 opacity-0 group-hover/band:opacity-100 bg-white/10 transition-opacity flex flex-col items-center justify-center p-2 text-center backdrop-blur-sm">
+                                    <span class="font-black text-white text-[10px] md:text-xs uppercase tracking-widest mb-1">Blue Light</span>
+                                    <span class="text-white/80 text-[9px] md:text-[10px] hidden md:block">Drives vegetative growth, compact internodes, stomatal opening.</span>
+                                </div>
+                            </div>
+                            <!-- Green (500-600) -->
+                            <div class="h-full flex-grow-[2] relative group/band transition-all duration-300 hover:flex-grow-[3]" style="background: linear-gradient(to right, #3b82f6, #10b981, #eab308);">
+                                <div class="absolute inset-0 opacity-0 group-hover/band:opacity-100 bg-white/10 transition-opacity flex flex-col items-center justify-center p-2 text-center backdrop-blur-sm">
+                                    <span class="font-black text-white text-[10px] md:text-xs uppercase tracking-widest mb-1">Green Light</span>
+                                    <span class="text-white/80 text-[9px] md:text-[10px] hidden md:block">Reflected by top leaves but penetrates deep into the canopy.</span>
+                                </div>
+                            </div>
+                            <!-- Red (600-700) -->
+                            <div class="h-full flex-grow-[2] relative group/band transition-all duration-300 hover:flex-grow-[3]" style="background: linear-gradient(to right, #eab308, #ef4444, #991b1b);">
+                                <div class="absolute inset-0 opacity-0 group-hover/band:opacity-100 bg-white/10 transition-opacity flex flex-col items-center justify-center p-2 text-center backdrop-blur-sm">
+                                    <span class="font-black text-white text-[10px] md:text-xs uppercase tracking-widest mb-1">Red Light</span>
+                                    <span class="text-white/80 text-[9px] md:text-[10px] hidden md:block">Peak absorption for chlorophyll. Drives photosynthesis and flowering.</span>
+                                </div>
+                            </div>
+                            <!-- Far Red / IR (700-750) -->
+                            <div class="h-full flex-grow-[1] relative group/band transition-all duration-300 hover:flex-grow-[2]" style="background: linear-gradient(to right, #991b1b, #450a0a);">
+                                <div class="absolute inset-0 opacity-0 group-hover/band:opacity-100 bg-white/10 transition-opacity flex flex-col items-center justify-center p-2 text-center backdrop-blur-sm">
+                                    <span class="font-black text-white text-[10px] md:text-xs uppercase tracking-widest mb-1">Far-Red (IR)</span>
+                                    <span class="text-white/80 text-[9px] md:text-[10px] hidden md:block">Emerson effect (boosts red absorption), triggers shade-avoidance stretching.</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between text-[9px] md:text-[10px] text-white/40 mt-3 font-bold px-4">
+                            <span>380nm</span>
+                            <span>450nm</span>
+                            <span>550nm</span>
+                            <span>660nm</span>
+                            <span>750nm</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 slide-up mb-16">
+                        <div class="glass p-10 md:p-12 rounded-[2rem] group hover:bg-white/5 transition-colors">
+                            <h3 class="text-xl font-black uppercase tracking-tighter mb-4 text-cyan-400">Light Metrics: PPFD & DLI</h3>
+                            <p class="text-white/70 text-sm leading-relaxed mb-4"><strong>PPFD (Intensity):</strong> Photosynthetic Photon Flux Density measures how many photons hit a specific area per second (µmol/m²/s). Aroids need 100-200 for maintenance, 200-400 for rapid growth.</p>
+                            <p class="text-white/70 text-sm leading-relaxed"><strong>DLI (Total Dose):</strong> Daily Light Integral is the total amount of light delivered over a full day. Think of PPFD as the rate of rainfall, and DLI as the total water in the bucket. A lower PPFD running for 14 hours equals a blinding light running for 8. Target 10-15 mol/m²/d.</p>
+                        </div>
+                        
+                        <div class="glass p-10 md:p-12 rounded-[2rem] group hover:bg-white/5 transition-colors">
+                            <h3 class="text-xl font-black uppercase tracking-tighter mb-4 text-purple-400">LED Efficiency & Chips</h3>
+                            <p class="text-white/70 text-sm leading-relaxed mb-4">Not all LEDs are equal. Efficiency is measured in µmol/J (micromoles per Joule of electricity). Cheap LEDs hit 1.5 µmol/J, converting most energy into heat. Top-tier diodes like the <strong>Samsung LM301H</strong> hit 3.1 µmol/J, delivering massive light with virtually zero heat.</p>
+                            <p class="text-white/70 text-sm leading-relaxed">Always check the diode manufacturer when buying a grow light. High-end lights use Samsung white diodes paired with Osram or Cree 660nm deep-red boosters.</p>
+                        </div>
+                    </div>
+
+                    <h3 class="text-2xl font-black uppercase tracking-tighter mb-8 border-b border-white/5 pb-4 slide-up">Full Spectrum vs. "Blurple"</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 slide-up mb-32">
+                        <div class="bg-gradient-to-br from-white/5 to-white/0 p-8 rounded-[2rem] border border-white/10 hover:border-emerald-500/30 transition-all group">
+                            <h4 class="font-bold text-lg mb-4 text-emerald-400 flex items-center gap-3"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" stroke-width="2"/></svg> Modern Full Spectrum (White)</h4>
+                            <p class="text-white/60 text-sm leading-relaxed mb-4">These utilize a blue diode coated with a phosphor layer to emit a broad, white light that closely mimics natural sunlight (typically 3500K-4000K). They contain the necessary green/yellow light for deep canopy penetration.</p>
+                            <ul class="text-xs text-white/50 space-y-2">
+                                <li>+ Extremely pleasant to look at (ideal for living spaces).</li>
+                                <li>+ Better deep canopy penetration.</li>
+                                <li>+ Easier to spot pests and nutrient deficiencies.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gradient-to-br from-white/5 to-white/0 p-8 rounded-[2rem] border border-white/10 hover:border-red-500/30 transition-all group">
+                            <h4 class="font-bold text-lg mb-4 text-red-400 flex items-center gap-3"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg> Traditional "Blurple" (Red/Blue)</h4>
+                            <p class="text-white/60 text-sm leading-relaxed mb-4">Older tech that only uses targeted red (660nm) and blue (450nm) diodes, creating a harsh purple glow. The theory was to only provide the peak absorption spectra, completely ignoring green light.</p>
+                            <ul class="text-xs text-white/50 space-y-2">
+                                <li>- Terrible for living areas (strains human eyes).</li>
+                                <li>- Makes diagnosing yellowing leaves or pests impossible.</li>
+                                <li>- Lacks green light, reducing sub-canopy growth.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <h2 id="water-chemistry" class="text-3xl md:text-4xl font-black uppercase tracking-tighter mt-32 mb-12 border-b border-white/10 pb-6 slide-up">Water Chemistry: pH & EC</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 slide-up mb-24" style="animation-delay: 0.1s;">
+                        <div class="glass p-10 md:p-16 rounded-[2rem] group hover:bg-white/5 transition-all duration-500">
+                            <span class="text-[10px] font-black text-sage-400 uppercase tracking-widest block mb-4">Acidity & Alkalinity</span>
+                            <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tighter mb-6">The Importance of pH</h2>
+                            <p class="text-white/60 text-sm leading-relaxed mb-6">pH determines the solubility of nutrients in your water and substrate. If the pH is too high (alkaline) or too low (acidic), certain nutrients precipitate out of the solution and become physically unavailable to the plant's roots. This leads to severe nutrient lock-out, causing deficiencies even if your soil is packed with fertilizer.</p>
+                            <a onclick="navigateTo('firstaid', {hash: 'nutrient-deficiencies'})" class="text-[10px] font-black uppercase tracking-widest text-cyan-400 hover:text-white cursor-pointer transition-colors flex items-center gap-2 w-fit mb-6"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"/></svg> View Nutrient Deficiencies Guide</a>
+                            <ul class="text-sm text-white/70 space-y-4">
+                                <li class="flex gap-4 items-start"><div class="w-2 h-2 rounded-full bg-sage-400 mt-1.5 shrink-0"></div><div><strong>Soil Target (6.0 - 6.5):</strong> Organic substrates buffer pH naturally. A slightly acidic environment is ideal for most tropicals.</div></li>
+                                <li class="flex gap-4 items-start"><div class="w-2 h-2 rounded-full bg-cyan-400 mt-1.5 shrink-0"></div><div><strong>Hydro/Pon Target (5.5 - 6.0):</strong> Inert media lacks buffering capacity. A lower pH is required to keep micronutrients like Iron fully dissolved.</div></li>
+                            </ul>
+                        </div>
+                        <div class="glass p-10 md:p-16 rounded-[2rem] group hover:bg-white/5 transition-all duration-500">
+                            <span class="text-[10px] font-black text-sage-400 uppercase tracking-widest block mb-4">Electrical Conductivity</span>
+                            <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tighter mb-6">EC & Water Types</h2>
+                            <p class="text-white/60 text-sm leading-relaxed mb-6">EC measures the total dissolved salts (nutrients) in your water. It tells you the "strength" of your feed. Too high, and you burn the roots via osmotic shock; too low, and the plant starves.</p>
+                            <ul class="text-sm text-white/70 space-y-4">
+                                <li class="flex gap-4 items-start"><div class="w-2 h-2 rounded-full bg-emerald-400 mt-1.5 shrink-0"></div><div><strong>Osmosis (RO) Water:</strong> Pure water (EC 0.0, pH ~7.0). A perfect blank canvas for precise nutrient mixing, but you <em>must</em> add Cal-Mag first.</div></li>
+                                <li class="flex gap-4 items-start"><div class="w-2 h-2 rounded-full bg-amber-400 mt-1.5 shrink-0"></div><div><strong>Soft Water:</strong> Low in dissolved minerals. Great for most tropicals, but may occasionally require Calcium/Magnesium supplementation.</div></li>
+                                <li class="flex gap-4 items-start"><div class="w-2 h-2 rounded-full bg-red-400 mt-1.5 shrink-0"></div><div><strong>Hard Water:</strong> High in Calcium Carbonate (high EC/pH out of the tap). Can cause severe mineral crusting on roots and leaves over time.</div></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="glass p-10 md:p-16 rounded-[2rem] slide-up mb-32 border-t border-white/5" style="animation-delay: 0.2s;">
+                        <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tighter mb-4 text-center">Nutrient Availability by pH</h2>
+                        <p class="text-white/50 text-sm text-center mb-12 max-w-2xl mx-auto">The thicker the bar, the higher the biological availability of the nutrient. Notice how Iron (Fe) becomes rapidly locked out as pH rises, while Macronutrients (N, P, K) thrive in slightly acidic conditions.</p>
+                        
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-12">
+                            <div>
+                                <h3 class="text-xl font-black uppercase tracking-widest text-sage-400 mb-6 text-center">Organic Soil</h3>
+                                ${generatePHChart('soil')}
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-black uppercase tracking-widest text-cyan-400 mb-6 text-center">Hydroponics / Substrate</h3>
+                                ${generatePHChart('hydro')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2 class="text-3xl md:text-4xl font-black uppercase tracking-tighter mt-32 mb-12 border-b border-white/10 pb-6 slide-up">IKEA Milsbo Smart Greenhouses</h2>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 slide-up" style="animation-delay: 0.3s;">
+                        <div class="lg:col-span-8 glass p-10 md:p-16 rounded-[2rem] flex flex-col justify-center">
+                            <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tighter mb-6">Engineering the Microclimate</h2>
+                            <p class="text-white/60 text-sm leading-relaxed mb-6">Converting an IKEA Milsbo (Tall or Wide) into a premium indoor greenhouse requires meticulous planning to prevent rust, mold, and electrical hazards.</p>
+                            <ul class="text-sm text-white/70 space-y-4">
+                                <li class="flex gap-4 items-start">
+                                    <div class="w-2 h-2 rounded-full bg-sage-400 mt-1.5 shrink-0"></div>
+                                    <div><strong>Weatherstripping:</strong> Use high-quality silicone weatherstripping around all glass doors. The goal is to trap 80%+ humidity, reducing the need for an active humidifier which can cause wet-rot on leaves.</div>
+                                </li>
+                                <li class="flex gap-4 items-start">
+                                    <div class="w-2 h-2 rounded-full bg-sage-400 mt-1.5 shrink-0"></div>
+                                    <div><strong>3D Printed Airflow:</strong> High humidity without airflow equals catastrophic fungal infections. Use 3D printed corner-brackets to mount 120mm PC fans (like AC Infinity or Noctua) at 45-degree angles to create a "vortex" of circular air. Use custom 3D printed Skadis pegboards instead of solid glass shelves to allow air to flow vertically.</div>
+                                </li>
+                                <li class="flex gap-4 items-start">
+                                    <div class="w-2 h-2 rounded-full bg-sage-400 mt-1.5 shrink-0"></div>
+                                    <div><strong>Lighting & Wiring:</strong> Mount Barrina T5 LEDs using magnetic brackets or 3D printed clips to the metal ceiling and under shelves. Route all cables cleanly through a custom-drilled hole in the metal base (fitted with a rubber grommet to prevent wire fraying).</div>
+                                </li>
+                                <li class="flex gap-4 items-start">
+                                    <div class="w-2 h-2 rounded-full bg-sage-400 mt-1.5 shrink-0"></div>
+                                    <div><strong>Smart Automation:</strong> Integrate a local microcontroller (ESP32) or smart plugs connected to Home Assistant. Use BME280 or DHT22 sensors to track Vapor Pressure Deficit (VPD). Automate the fans to ramp up when humidity peaks above 90% or when the grow lights turn on.</div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="lg:col-span-4 flex flex-col gap-8">
+                            <div class="glass p-2 md:p-3 rounded-[2rem] shadow-2xl group flex-grow">
+                                <div class="w-full h-full min-h-[400px] rounded-[1.5rem] overflow-hidden relative">
+                                    <img src="./assets/ui_cabinet.jpg" class="absolute inset-0 w-full h-full object-cover object-center mix-blend-luminosity opacity-80 group-hover:mix-blend-normal group-hover:opacity-100 group-hover:scale-105 transition-all duration-1000" alt="IKEA Milsbo Smart Greenhouse Cabinet">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-forest-950/80 via-transparent to-transparent pointer-events-none"></div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="glass p-6 rounded-[2rem] border border-white/5 bg-white/5 flex flex-col justify-center text-center group hover:bg-white/10 transition-colors">
+                                    <div class="w-12 h-12 mx-auto bg-sage-400/20 rounded-full flex items-center justify-center mb-4">
+                                        <svg class="w-6 h-6 text-sage-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-width="2"/></svg>
+                                    </div>
+                                    <h3 class="font-black text-[10px] md:text-xs uppercase tracking-widest text-white group-hover:text-sage-400 transition-colors">3D Mods</h3>
+                                </div>
+                                <div class="glass p-6 rounded-[2rem] border border-white/5 bg-white/5 flex flex-col justify-center text-center group hover:bg-white/10 transition-colors">
+                                    <div class="w-12 h-12 mx-auto bg-cyan-400/20 rounded-full flex items-center justify-center mb-4">
+                                        <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2"/></svg>
+                                    </div>
+                                    <h3 class="font-black text-[10px] md:text-xs uppercase tracking-widest text-white group-hover:text-cyan-400 transition-colors">Telemetry</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => { if(document.getElementById('vpd-temp')) updateVPDGauge(); }, 100);
+        }
+
+        function handleSearch() {
+            currentSearchTerm = document.getElementById('searchInput').value;
+            showCatalog();
+        }
+
+        document.getElementById('searchInput').addEventListener('input', handleSearch);
+        
+        handleInitialLoad();
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

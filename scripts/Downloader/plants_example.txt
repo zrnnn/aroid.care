@@ -1,0 +1,34 @@
+# Plant Image List
+# One scientific name per line. Lines starting with # are ignored.
+# Tip: Use full scientific names for best results.
+
+Anthurium luxurians
+Anthurium crystallinum
+Monstera deliciosa
+Monstera adansonii
+Philodendron gloriosum
+Philodendron melanochrysum
+Alocasia reginula
+Alocasia zebrina
+Begonia pavonina
+Calathea orbifolia
+Calathea warscewiczii
+Maranta leuconeura
+Ctenanthe setosa
+Stromanthe thalia
+Hoya kerrii
+Hoya carnosa
+Ficus lyrata
+Ficus elastica
+Pilea peperomioides
+Peperomia caperata
+Zamioculcas zamiifolia
+Sansevieria trifasciata
+Dracaena marginata
+Spathiphyllum wallisii
+Dieffenbachia seguine
+Tradescantia zebrina
+Oxalis triangularis
+Caladium bicolor
+Aglaonema commutatum
+Syngonium podophyllum
